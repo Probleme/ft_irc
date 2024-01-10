@@ -35,10 +35,24 @@ class Server;
 class Command
 {
     public:
-        std::map<std::string, Command *> _commands;
+        std::map<std::string, void (Command::*)(Client *client, std::vector<std::string> args)> _commands;
         Command();
         ~Command();
-        void execute(Client *client, std::string command);
+        void nick(Client *client, std::vector<std::string> args);
+        void user(Client *client, std::vector<std::string> args);
+        void join(Client *client, std::vector<std::string> args);
+        void part(Client *client, std::vector<std::string> args);
+        void privmsg(Client *client, std::vector<std::string> args);
+        void notice(Client *client, std::vector<std::string> args);
+        void quit(Client *client, std::vector<std::string> args);
+        void list(Client *client, std::vector<std::string> args);
+        void who(Client *client, std::vector<std::string> args);
+        void kick(Client *client, std::vector<std::string> args);
+        void mode(Client *client, std::vector<std::string> args);
+        void ping(Client *client, std::vector<std::string> args);
+        void pong(Client *client, std::vector<std::string> args);
+        void pass(Client *client, std::vector<std::string> args);
+        void execute(Client *client, std::vector<std::string> args);
         
 };
 

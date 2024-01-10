@@ -14,6 +14,9 @@
 #include "../inc/Client.hpp"
 #include "../inc/Command.hpp"
 
+#include <cstdlib>
+#include <cerrno>
+
 class Client;
 class Command;
 
@@ -184,7 +187,6 @@ void Server::readFromClient(Client *client)
             }
             else
             {
-                puts(buffer);
                 client->setMessage(client->getMessage() + buff); // append the message to the client's buffer
             }
         }
@@ -216,7 +218,8 @@ void Server::handleCommands(Client *client, std::string &commands)
         std::string name = cmd.substr(0, cmd.find(' '));
         try
         {
-            // Command *command = command->_commands.at(name);
+            Command *command = new Command();
+            command->_commands.at(name);
             std::vector<std::string> args;
             std::string buf;
             std::istringstream ss(cmd.substr(name.length(), cmd.length()));
@@ -224,16 +227,16 @@ void Server::handleCommands(Client *client, std::string &commands)
                 args.push_back(buf);
             if (client->isRegistered() )
             {
-                client->reply("ERROR :You have not registered", client->getNickname());
+                client->reply("ERROR :You have not registered");
                 return;
             }
-            // command->execute(client, args);
+            command->execute(client, args);
         }
         catch (const std::out_of_range &e)
         {
             // if (name != "CAP")
             //     client->reply(ERR_UNKNOWNCOMMAND(client->getNickname(), name));
-            client->reply("ERROR :Unknown command", client->getNickname());
+            client->reply("ERROR :Unknown command catched", client->getNickname());
         }
     }
 }
