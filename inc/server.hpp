@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.hpp                                         :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/04 05:57:48 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/09 05:28:38 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,21 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <poll.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sstream>
+# include <sys/types.h>
+# include <sys/time.h>
 
-# include "utils.hpp"
 
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 
 # define BUFFER_SIZE 1024
+
+class Client;
 
 
 class Server
@@ -35,18 +42,25 @@ class Server
         std::string _start_time; // start_time is a string of 32 characters
         int _port; // port is a 16-bit unsigned integer
         int _socket; // socket is an endpoint for communication
-        struct sockaddr_in6 _client_address; // sockaddr_in is a structure containing an internet address
-        std::vector<std::string> _channels; // channels is a list of channels
-        std::map<std::string, std::string> _users; // users is a list of users
-        std::map<std::string, std::string> _messages; // messages is a list of messages
+        struct sockaddr_in _client_address; // sockaddr_in is a structure containing an internet address (IPv4)
+        struct pollfd *_fds;
+        std::vector<Client *> _users;
+        // std::vector<Channel *> _chanels; // channels is a list of channels
     public:
         Server();
         Server(std::string password, int port);
-        Server(const Server &s);
         ~Server();
-        Server &operator=(const Server &s);
 
+        std::string dateString();
         void run();
+        void setNonBlocking(int fd);
+        void constructDescriptorSet();
+        void acceptNewConnection();
+        void addNewClient(int fd, std::string ip, int port);
+        void readFromClient(Client *client);
+        void removeClient(int fd);
+        void handleCommands(Client *client, std::string &command);
+        
 };
 
 # endif
