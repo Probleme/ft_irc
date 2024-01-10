@@ -12,6 +12,10 @@
 
 #include "../inc/Server.hpp"
 
+#include <cstdlib>
+#include <cerrno>
+#include <cstring>
+
 int main(int argc, char **argv)
 {
     if (argc != 3)

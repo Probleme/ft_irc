@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 
-CC = c++ -Wall -Wextra -Werror -std=c++98 #-g -fsanitize=address,undefined
+CC = c++ -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address,undefined
 NAME = ircserv
 OBJECTS = ./obj
 INCLUDES = ./inc
