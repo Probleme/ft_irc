@@ -55,8 +55,19 @@ void Command::nick(Client *client, std::vector<std::string> args)
 
 void Command::user(Client *client, std::vector<std::string> args)
 {
-    (void)client;
-    (void)args;
+    if (args.size() < 4 || args.size() > 5)
+    {
+        client->reply("invalid arguments");
+        return;
+    }
+    if (!client->isRegistered())
+    {
+        client->reply("already registered");
+        return;
+    }
+    client->setUsername(args[0]);
+    client->setRealname(args[3].substr(1));
+    client->welcome();
 }
 
 void Command::join(Client *client, std::vector<std::string> args)

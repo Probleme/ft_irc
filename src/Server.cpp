@@ -225,11 +225,8 @@ void Server::handleCommands(Client *client, std::string &commands)
             std::istringstream ss(cmd.substr(name.length(), cmd.length()));
             while (ss >> buf)
                 args.push_back(buf);
-            if (client->isRegistered() )
-            {
-                client->reply("ERROR :You have not registered");
-                return;
-            }
+            // if (client->isRegistered())
+            //     return;
             command->execute(client, args);
         }
         catch (const std::out_of_range &e)

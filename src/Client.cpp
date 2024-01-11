@@ -12,7 +12,7 @@
 
 #include "../inc/Client.hpp"
 
-Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _password(0), _port(port), _fd(fd), _server(server) {(void)_server;}
+Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _port(port), _fd(fd), _server(server) {(void)_server;}
 
 Client::~Client() {}
 
@@ -28,7 +28,7 @@ void Client::setServername(std::string servername) { _servername = servername; }
 
 void Client::setHostname(std::string hostname) { _hostname = hostname; }
 
-void Client::setPassword(int password) { _password = password; }
+// void Client::setPassword(int password) { _password = password; }
 
 void Client::setPort(int port) { _port = port; }
 
@@ -46,7 +46,7 @@ std::string const& Client::getServername() const { return (_servername); }
 
 std::string const& Client::getHostname() const { return (_hostname); }
 
-int Client::getPassword() const { return (_password); }
+// int Client::getPassword() const { return (_password); }
 
 int Client::getPort() const { return (_port); }
 
@@ -103,5 +103,15 @@ void Client::sendMessage()
 
 bool Client::isRegistered()
 {
-    return (this->getNickname().empty() && this->getUsername().empty() && this->getRealname().empty() && this->_password == 0);
+    if (this->getNickname().empty() && this->getUsername().empty() && this->getRealname().empty())
+    {
+        this->reply("ERROR :You have not registered");
+        return true;
+    }
+    else
+    {
+        this->reply("ERROR :Unauthorized command (already registered)");
+        return true;
+    }
+    return (false);
 }

@@ -36,7 +36,7 @@ class Client{
         std::string _username;
         std::string _nickname;
         std::string _message;
-        int _password;
+        // int _password;
         int _port;
         int _fd;
         Server *_server;
@@ -49,7 +49,7 @@ class Client{
         void setRealname(std::string realname);
         void setServername(std::string servername);
         void setHostname(std::string hostname);
-        void setPassword(int password);
+        // void setPassword(int password);
         void setPort(int port);
         void setFd(int fd);
         std::string const& getMessage() const;
@@ -58,7 +58,7 @@ class Client{
         std::string const& getRealname() const;
         std::string const& getServername() const;
         std::string const& getHostname() const;
-        int getPassword() const;
+        // int getPassword() const;
         int getPort() const;
         int getFd() const;
         
