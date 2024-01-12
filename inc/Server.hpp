@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:04:06 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/12 20:53:50 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,10 @@ class Server
         std::string dateString();
         void run();
         void setNonBlocking(int fd);
-        void constructDescriptorSet();
+        void setDescriptors();
         void acceptNewConnection();
         void addNewClient(int fd, std::string ip, int port);
-        void readFromClient(Client *client);
+        void readFromClient(int i);
         void removeClient(int fd);
         void handleCommands(Client *client, std::string &command);
         std::vector<Client *> getUsers() const;

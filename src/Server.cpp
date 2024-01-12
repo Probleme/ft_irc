@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:04:33 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/12 20:55:20 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ std::string Server::dateString()
 
 void Server::run()
 {
+    /*
+        *
+    */
     int opt = 1; // setsockopt option
     
     /*
@@ -54,9 +57,8 @@ void Server::run()
          This is useful for a server that needs to restart while a previous connection is still in the TIME_WAIT state, or for allowing multiple sockets to listen on the same IP address and port combination.
         *_socket: This is the file descriptor of the socket on which the options are being set. It was obtained from the previous socket() call.
         *SOL_SOCKET: This is the level at which the option is defined. SOL_SOCKET is used to specify socket-level options, as opposed to protocol-specific options.
-        *SO_REUSEADDR | SO_REUSEPORT: These are the actual options being set. The | operator is used to perform a bitwise OR, which combines the two options into a single parameter.
+        *SO_REUSEADDR : These are the actual options being set.
             SO_REUSEADDR: Allows the socket to bind to an address that is already in use.
-            SO_REUSEPORT: Permits multiple sockets to bind to the same port number.
         *&opt: This is a pointer to the variable opt, which holds the value for the option being set. In this case, opt is set to 1, which enables the SO_REUSEADDR and SO_REUSEPORT options.
         *sizeof(opt): This specifies the size of the opt variable. It is necessary because setsockopt() needs to know the size of the buffer pointed to by &opt.
     */
@@ -73,7 +75,7 @@ void Server::run()
     /*
         *The purpose of this line is to associate a local address and port with the server socket.
          Binding is a crucial step for a server as it informs the operating system on which network interface and port the server should listen for incoming connections.
-        *_socket: This is the file descriptor of the server socket, obtained from the earlier socket() call.CopyCopyCopy
+        *_socket: This is the file descriptor of the server socket, obtained from the earlier socket() call.
         *(struct sockaddr *)&_client_address: This argument represents the address to which the socket is bound. The struct sockaddr is a generic socket address structure, and _client_address is likely an instance of this structure specific to the IPv4 address family (AF_INET). The (struct sockaddr *) is a typecast to the generic socket address structure pointer required by the bind() function.
         *sizeof(_client_address): This argument specifies the size of the address structure passed to bind(). It's necessary for the function to know how much memory to read when interpreting the address structure.
         
@@ -83,13 +85,19 @@ void Server::run()
         std::cerr << "bind failed" << std::endl;
         exit(EXIT_FAILURE);
     }
+    /*
+        *The purpose of this line is to set the server socket to listen for incoming connections.
+         The listen() function tells the operating system to allow incoming connections on the socket.
+        *_socket: This is the file descriptor of the server socket, obtained from the earlier socket() call.
+        *10: This is the maximum number of pending connections that can be queued up at any one time. This is not the maximum number of connections that can be accepted. The maximum number of connections that can be accepted is limited by the operating system.
+    */
     if (listen(_socket, 10) < 0)
     {
         std::cerr << "listen failed" << std::endl;
         exit(EXIT_FAILURE);
     }
     std::cout << "Server is listening on port " << _port << " and waiting for connections..." << std::endl;
-    constructDescriptorSet();
+    setDescriptors();
     while (1)
     {
         /*
@@ -108,15 +116,12 @@ void Server::run()
         }
         for (size_t i = 0; i < _users.size() + 1; i++)
         {
-            if (_fds[i].revents == 0)
+            if (_fds[i].revents == 0) // if the revents field is 0, then no events occurred on this file descriptor
                 continue;
-            if (_fds[i].fd == _socket)
+            if (_fds[i].fd == _socket) // if the server socket is ready, then a new connection is available to be accepted
                 this->acceptNewConnection();
-            else if (i > 0)
-            {
-                Client *client = _users[i - 1];
-                this->readFromClient(client);
-            }
+            else if (i > 0) // if a client socket is ready, then data is available to be read
+                this->readFromClient(i);
         }
     }
 }
@@ -130,15 +135,15 @@ void Server::setNonBlocking(int fd)
         *We should call setNonBlocking on the server socket to make sure that
          accept() does not block the main server loop
     */
-    int flags = fcntl(fd, F_GETFL, 0);
+    int flags = fcntl(fd, F_GETFL, 0); // get the file status flags 
     if (flags == -1)
     {
         std::cerr << "fcntl failed" << std::endl;
         exit(EXIT_FAILURE);
     }
     
-    flags |= O_NONBLOCK;
-    int s = fcntl(fd, F_SETFL, flags);
+    flags |= O_NONBLOCK; // set the O_NONBLOCK flag that makes the socket non-blocking
+    int s = fcntl(fd, F_SETFL, flags); // set the file status flags
     if (s == -1)
     {
         std::cerr << "fcntl failed" << std::endl;
@@ -146,7 +151,7 @@ void Server::setNonBlocking(int fd)
     }
 }
 
-void Server::constructDescriptorSet()
+void Server::setDescriptors()
 {
     // Create a single pollfd for handling all operations
     /*
@@ -157,80 +162,93 @@ void Server::constructDescriptorSet()
     */
     if (this->_fds)
         delete[] this->_fds;
-    this->_fds = new struct pollfd[this->_users.size() + 1];
-    this->_fds[0].fd = this->_socket;
-    this->_fds[0].events = POLLIN;
+    this->_fds = new struct pollfd[this->_users.size() + 1]; // allocate memory for the pollfd array (users.size() for the clients + 1 for the server socket)
+    this->_fds[0].fd = this->_socket; // add the server socket to the array
+    this->_fds[0].events = POLLIN; // POLLIN is used to monitor the server socket for incoming data to read
     for (size_t i = 0; i < this->_users.size(); i++)
     {
-        this->_fds[i + 1].fd = this->_users[i]->getFd();
-        this->_fds[i + 1].events = POLLIN;
+        this->_fds[i + 1].fd = this->_users[i]->getFd(); // add the client socket to the array
+        this->_fds[i + 1].events = POLLIN; // POLLIN is used to monitor the client socket for incoming data to read
     }
 }
 
 void Server::acceptNewConnection()
 {
-    while (1)
+    socklen_t address_len = sizeof(_client_address);
+    /*
+        *accept() is used to accept a connection request from a client.
+         It extracts the first connection request on the queue of pending connections for the listening socket, sockfd, creates a new connected socket, and returns a new file descriptor referring to that socket.
+    */
+    int socket = accept(_socket, (struct sockaddr *)&_client_address, &address_len);
+    if (socket < 0)
     {
-        socklen_t address_len = sizeof(_client_address);
-        int socket = accept(_socket, (struct sockaddr *)&_client_address, &address_len);
-        if (socket < 0)
-        {
-            if (errno != EWOULDBLOCK)
-                std::cerr << "Error: Failed to accept connection." << std::endl;
-            break;
-        }
-        std::string ip = inet_ntoa(_client_address.sin_addr);
-        int port = ntohs(_client_address.sin_port);
-        if (ip.empty())
-            ip = "127.0.0.1";
-        this->_users.push_back(new Client(ip, this, port, socket)); // add new client to the list
-        this->setNonBlocking(socket); // set the socket to non-blocking
-        this->constructDescriptorSet(); // update the descriptor set
-        std::cout << "New connection from " << inet_ntoa(_client_address.sin_addr) << ":" << ntohs(_client_address.sin_port) << std::endl;
+        if (errno != EWOULDBLOCK)
+            std::cerr << "Error: Failed to accept connection." << std::endl;
+        return;
     }
+    /*
+        *inet_ntoa() converts the Internet host address in, given in network byte order, to a string in IPv4 dotted-decimal notation.
+        *ntohs() converts the unsigned short integer netshort from network byte order to host byte order.
+    */
+    std::string ip = inet_ntoa(_client_address.sin_addr); // get the IP address of the client
+    int port = ntohs(_client_address.sin_port); // get the port number of the client
+    if (ip.empty())
+        ip = "127.0.0.1";
+    this->_users.push_back(new Client(ip, this, port, socket)); // add new client to the list
+    this->setNonBlocking(socket); // set the socket to non-blocking
+    this->setDescriptors(); // rebuild the pollfd array
+    std::cout << "New connection from " << inet_ntoa(_client_address.sin_addr) << ":" << ntohs(_client_address.sin_port) << std::endl;
 }
 
-
-void Server::readFromClient(Client *client)
+void Server::readFromClient(int i)
 {
+    Client *client = _users[i - 1]; // if a client socket is ready, then data is available to be read
     char buffer[BUFFER_SIZE + 1];
-    do
+    /*
+        *The recv() function is used to read data from the client socket. It returns the number of bytes read, or -1 if an error occurs.
+        *The purpose of this function is to read data from the client socket and handle any errors that occur.
+        *argyment 1: client->getFd() is the file descriptor of the client socket.
+        *argyment 2: buffer is a pointer to the buffer where the data will be stored.
+        *argyment 3: sizeof(buffer) is the maximum number of bytes to read.
+        *argyment 4: 0 is the type of message reception. It is set to 0 for normal behavior.
+    */
+    int ret = recv(client->getFd(), buffer, sizeof(buffer), 0);
+    if (ret < 0)
     {
-        int ret = recv(client->getFd(), buffer, sizeof(buffer), 0);
-        if (ret < 0)
+        /*
+            *The purpose of this if statement is to handle any errors that occur when reading data from the client socket.
+            *If the error is not EWOULDBLOCK, then the client socket has been closed or an error has occurred.
+            *In either case, the client socket is removed from the list of connected clients and the pollfd array is rebuilt.
+        */
+        if (errno != EWOULDBLOCK) // if the errno is EWOULDBLOCK, then there is no data available to read , EWOLDBLOCK is a non-fatal error that occurs when there is no data available to read
         {
-            if (errno != EWOULDBLOCK)
-            {
-                std::cerr << "Error: recv() failed for fd " << client->getFd();
-                this->removeClient(client->getFd());
-                this->constructDescriptorSet();
-            }
-            break;
+            std::cerr << "Error: recv() failed for fd " << client->getFd();
+            this->removeClient(client->getFd()); // remove the client from the list
+            this->setDescriptors(); // rebuild the pollfd array
         }
-        else if (!ret)
+        return;
+    }
+    else if (!ret) // if ret is 0, then the connection has been closed by the client
+    {
+        std::cout << "Client " << client->getNickname() << " disconnected." << std::endl;
+        this->removeClient(client->getFd());
+        this->setDescriptors();
+        return;
+    }
+    else
+    {
+        buffer[ret] = '\0'; // add the null terminator to the end of the buffer
+        std::string buff = buffer;
+        if (buff.at(buff.size() - 1) == '\n') // if the last character is a newline, then the client has sent a complete message
         {
-            std::cout << "Client " << client->getNickname() << " disconnected." << std::endl;
-            this->removeClient(client->getFd());
-            this->constructDescriptorSet();
-            break;
+            std::vector<std::string> msg = client->split(buff, '\n'); // split the buffer into separate messages by splitting on the newline character
+            client->setMessage(""); // clear the client's buffer
+            for (std::vector<std::string>::iterator it = msg.begin(); it != msg.end(); it++) // loop through each message
+                this->handleCommands(client, *it);
         }
         else
-        {
-            buffer[ret] = '\0';
-            std::string buff = buffer;
-            if (buff.at(buff.size() - 1) == '\n')
-            {
-                std::vector<std::string> cmds = client->split(buff, '\n');
-                client->setMessage("");
-                for (std::vector<std::string>::iterator it = cmds.begin(); it != cmds.end(); it++)
-                    this->handleCommands(client, *it);
-            }
-            else
-            {
-                client->setMessage(client->getMessage() + buff); // append the message to the client's buffer
-            }
-        }
-    } while (1);
+            client->setMessage(client->getMessage() + buff); // append the message to the client's buffer until a newline is received
+    }
     
 }
 
@@ -247,28 +265,36 @@ void Server::removeClient(int fd)
     }
 }
 
-void Server::handleCommands(Client *client, std::string &commands)
+void Server::handleCommands(Client *client, std::string &msg)
 {
     std::string cmd;
-    std::istringstream message(commands);
-    Command *command = new Command();
+    std::istringstream message(msg);
+    Command command = Command();
 
     while (std::getline(message, cmd))
     {
-        cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length());
-        std::string name = cmd.substr(0, cmd.find(' '));
-        if (command->_commands.find(name) == command->_commands.end()) {
-            std::cout << "Command not found: " << name << std::endl;
+        std::istringstream cmd_name(cmd); // get the command name
+        std::string name;
+        cmd_name >> name; // get the command name by extracting the first word from the message
+        /*
+            The \r character, known as the carriage return, is used in programming to move the cursor back to the beginning of the line. It does not directly correspond to the action of pressing and releasing the Enter key. However, the behavior of the Enter key can vary depending on the operating system:
+            In Windows, pressing the Enter key typically generates two characters: a carriage return (\r) followed by a line feed (\n). This combination is used to start a new line.
+            In macOS and Linux, pressing the Enter key usually generates just a line feed (\n), which is sufficient to start a new line.
+            The carriage return character can be used in various programming scenarios, such as in C where \r is used to move the cursor to the beginning of the line in console output
+        */
+        cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
+        if (command._commands.find(name) == command._commands.end()) { // if the command does not exist
+            client->reply("Invalid command");
             continue;
         }
         std::vector<std::string> args;
         std::string buf;
-        std::istringstream ss(cmd.substr(name.length(), cmd.length()));
+        std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
         // if (client->isRegistered())
         //     return;
-        command->execute(client, args, name, this);
+        command.execute(client, args, name, this);
     }
 }
 
