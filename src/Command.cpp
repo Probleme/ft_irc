@@ -34,39 +34,41 @@ Command::Command() {
     
 }
 
-void Command::execute(Client *client, std::vector<std::string> args)
+void Command::execute(Client *client, std::vector<std::string> args, std::string command)
 {
     if (args.empty())
     {
-        client->reply("no arguments");
-        return;
+        client->reply("invalid arguments");
+        return; 
     }
-    if (_commands.find(args[0]) != _commands.end())
-        (this->*_commands[args[0]])(client, args);
-    else
-        client->reply("Unknown command");
+    (this->*_commands[command])(client, args);
 }
 
 void Command::nick(Client *client, std::vector<std::string> args)
 {
-    (void)client;
-    (void)args;
-}
-
-void Command::user(Client *client, std::vector<std::string> args)
-{
-    if (args.size() < 4 || args.size() > 5)
+    if (args.size() != 1)
     {
         client->reply("invalid arguments");
         return;
     }
-    if (!client->isRegistered())
+    client->setNickname(args[0]);
+    client->welcome();
+}
+
+void Command::user(Client *client, std::vector<std::string> args)
+{
+    if (args.size() != 3)
     {
-        client->reply("already registered");
+        client->reply("invalid arguments");
         return;
     }
+    // if (!client->isRegistered())
+    // {
+    //     client->reply("already registered");
+    //     return;
+    // }
     client->setUsername(args[0]);
-    client->setRealname(args[3].substr(1));
+    client->setRealname(args[2].substr(1));
     client->welcome();
 }
 
@@ -128,14 +130,12 @@ void Command::ping(Client *client, std::vector<std::string> args)
 {
     (void)client;
     (void)args;
-    std::cout << "test pong" << std::endl;
 }
 
 void Command::pong(Client *client, std::vector<std::string> args)
 {
     (void)client;
     (void)args;
-    std::cout << "test pong" << std::endl;
 }
 
 void Command::pass(Client *client, std::vector<std::string> args)

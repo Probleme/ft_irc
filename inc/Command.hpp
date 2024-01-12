@@ -52,7 +52,7 @@ class Command
         void ping(Client *client, std::vector<std::string> args);
         void pong(Client *client, std::vector<std::string> args);
         void pass(Client *client, std::vector<std::string> args);
-        void execute(Client *client, std::vector<std::string> args);
+        void execute(Client *client, std::vector<std::string> args, std::string command);
         
 };
 
