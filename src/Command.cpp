@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/10 11:31:33 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/12 20:46:53 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,18 +34,19 @@ Command::Command() {
     
 }
 
-void Command::execute(Client *client, std::vector<std::string> args, std::string command)
+void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
 {
-    if (args.empty())
-    {
-        client->reply("invalid arguments");
-        return; 
-    }
-    (this->*_commands[command])(client, args);
+    // if (args.empty())
+    // {
+    //     client->reply("invalid arguments");
+    //     return; 
+    // }
+    (this->*_commands[command])(client, args, server);
 }
 
-void Command::nick(Client *client, std::vector<std::string> args)
+void Command::nick(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     if (args.size() != 1)
     {
         client->reply("invalid arguments");
@@ -55,91 +56,129 @@ void Command::nick(Client *client, std::vector<std::string> args)
     client->welcome();
 }
 
-void Command::user(Client *client, std::vector<std::string> args)
+void Command::user(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() != 3)
+    (void)server;
+    if (args.size() != 4)
     {
         client->reply("invalid arguments");
         return;
     }
+    client->setUsername(args[0]);
+    client->setRealname(args[3]);
+    client->welcome();
     // if (!client->isRegistered())
     // {
     //     client->reply("already registered");
     //     return;
     // }
-    client->setUsername(args[0]);
-    client->setRealname(args[2].substr(1));
-    client->welcome();
 }
 
-void Command::join(Client *client, std::vector<std::string> args)
+void Command::join(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::part(Client *client, std::vector<std::string> args)
+void Command::part(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::privmsg(Client *client, std::vector<std::string> args)
+void Command::privmsg(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::notice(Client *client, std::vector<std::string> args)
+void Command::notice(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::quit(Client *client, std::vector<std::string> args)
+void Command::quit(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
+    std::string msg;
+    for (std::vector<std::string >::iterator it = args.begin(); it != args.end(); it++)
+        msg += it->c_str();
+    client->setMessage(msg);
+    client->sendMessage();
+    close(client->getFd());
+}
+
+void Command::list(Client *client, std::vector<std::string> args, Server *server)
+{
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::list(Client *client, std::vector<std::string> args)
+void Command::who(Client *client, std::vector<std::string> args, Server *server)
 {
+    std::vector<Client *> users = server->getUsers();
+    if (args.size() == 0)
+    {
+        for (std::vector<Client *>::iterator it = users.begin(); it != users.end(); it++)
+        {
+            std::string msg = (*it)->getNickname() + " " + (*it)->getUsername() + " " + (*it)->getHostname() + " " + (*it)->getServername();
+            client->reply(msg);
+        }
+    }
+    for (std::vector<std::string >::iterator it = args.begin(); it != args.end(); it++)
+    {
+        for (std::vector<Client *>::iterator it2 = users.begin(); it2 != users.end(); it2++)
+        {
+            if ((*it2)->getUsername() == *it || (*it2)->getNickname() == *it || (*it2)->getRealname() == *it)
+            {
+                std::string msg = (*it2)->getNickname() + " " + (*it2)->getUsername() + " " + (*it2)->getHostname() + " " + (*it2)->getServername();
+                client->reply(msg);
+            }
+        }
+    }
+}
+
+void Command::kick(Client *client, std::vector<std::string> args, Server *server)
+{
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::who(Client *client, std::vector<std::string> args)
+void Command::mode(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::kick(Client *client, std::vector<std::string> args)
+void Command::ping(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)server;
+    if (args.size() == 0)
+    {
+        client->reply("invalid arguments");
+        return;
+    }
+    client->reply("PONG " + args[0]);
+}
+
+void Command::pong(Client *client, std::vector<std::string> args, Server *server)
+{
+    (void)server;
     (void)client;
     (void)args;
 }
 
-void Command::mode(Client *client, std::vector<std::string> args)
+void Command::pass(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)client;
-    (void)args;
-}
-
-void Command::ping(Client *client, std::vector<std::string> args)
-{
-    (void)client;
-    (void)args;
-}
-
-void Command::pong(Client *client, std::vector<std::string> args)
-{
-    (void)client;
-    (void)args;
-}
-
-void Command::pass(Client *client, std::vector<std::string> args)
-{
+    (void)server;
     (void)client;
     (void)args;
 }

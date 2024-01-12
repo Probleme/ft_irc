@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/10 11:54:46 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/12 20:04:33 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void Server::run()
         *&opt: This is a pointer to the variable opt, which holds the value for the option being set. In this case, opt is set to 1, which enables the SO_REUSEADDR and SO_REUSEPORT options.
         *sizeof(opt): This specifies the size of the opt variable. It is necessary because setsockopt() needs to know the size of the buffer pointed to by &opt.
     */
-    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
         exit(EXIT_FAILURE);
@@ -268,6 +268,11 @@ void Server::handleCommands(Client *client, std::string &commands)
             args.push_back(buf);
         // if (client->isRegistered())
         //     return;
-        command->execute(client, args, name);
+        command->execute(client, args, name, this);
     }
+}
+
+std::vector<Client *> Server::getUsers() const
+{
+    return this->_users;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/09 05:28:38 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/12 20:04:06 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ class Server
         int _socket; // socket is an endpoint for communication
         struct sockaddr_in _client_address; // sockaddr_in is a structure containing an internet address (IPv4)
         struct pollfd *_fds;
-        std::vector<Client *> _users;
         // std::vector<Channel *> _chanels; // channels is a list of channels
+        std::vector<Client *> _users;
     public:
         Server();
         Server(std::string password, int port);
@@ -60,6 +60,7 @@ class Server
         void readFromClient(Client *client);
         void removeClient(int fd);
         void handleCommands(Client *client, std::string &command);
+        std::vector<Client *> getUsers() const;
         
 };
 

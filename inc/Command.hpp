@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:00:32 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/10 11:24:15 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/12 17:55:51 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,24 +35,24 @@ class Server;
 class Command
 {
     public:
-        std::map<std::string, void (Command::*)(Client *client, std::vector<std::string> args)> _commands;
+        std::map<std::string, void (Command::*)(Client *client, std::vector<std::string> args, Server *server)> _commands;
         Command();
         ~Command();
-        void nick(Client *client, std::vector<std::string> args);
-        void user(Client *client, std::vector<std::string> args);
-        void join(Client *client, std::vector<std::string> args);
-        void part(Client *client, std::vector<std::string> args);
-        void privmsg(Client *client, std::vector<std::string> args);
-        void notice(Client *client, std::vector<std::string> args);
-        void quit(Client *client, std::vector<std::string> args);
-        void list(Client *client, std::vector<std::string> args);
-        void who(Client *client, std::vector<std::string> args);
-        void kick(Client *client, std::vector<std::string> args);
-        void mode(Client *client, std::vector<std::string> args);
-        void ping(Client *client, std::vector<std::string> args);
-        void pong(Client *client, std::vector<std::string> args);
-        void pass(Client *client, std::vector<std::string> args);
-        void execute(Client *client, std::vector<std::string> args, std::string command);
+        void nick(Client *client, std::vector<std::string> args, Server *server);
+        void user(Client *client, std::vector<std::string> args, Server *server);
+        void join(Client *client, std::vector<std::string> args, Server *server);
+        void part(Client *client, std::vector<std::string> args, Server *server);
+        void privmsg(Client *client, std::vector<std::string> args, Server *server);
+        void notice(Client *client, std::vector<std::string> args, Server *server);
+        void quit(Client *client, std::vector<std::string> args, Server *server);
+        void list(Client *client, std::vector<std::string> args, Server *server);
+        void who(Client *client, std::vector<std::string> args, Server *server);
+        void kick(Client *client, std::vector<std::string> args, Server *server);
+        void mode(Client *client, std::vector<std::string> args, Server *server);
+        void ping(Client *client, std::vector<std::string> args, Server *server);
+        void pong(Client *client, std::vector<std::string> args, Server *server);
+        void pass(Client *client, std::vector<std::string> args, Server *server);
+        void execute(Client *client, std::vector<std::string> args, std::string command, Server *server);
         
 };
 
