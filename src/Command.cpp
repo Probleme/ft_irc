@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:46:53 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/14 11:15:06 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,25 @@ void Command::user(Client *client, std::vector<std::string> args, Server *server
     //     return;
     // }
 }
-
+bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::vector<Channel *> channels)
+{
+    for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+    {
+        if ((*it)->getName() == channel_name)
+        {
+            std::vector<Client *> clients = (*it)->getClients();
+            for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
+            {
+                if ((*it2)->getNickname() == client->getNickname())
+                {
+                    client->reply("already in channel " + channel_name);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 void Command::join(Client *client, std::vector<std::string> args, Server *server)
 {
     if (args.size() != 1)
@@ -82,6 +100,8 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         return;
     }
     std::vector<Channel *> channels = server->getChannels();
+    if (check_if_user_is_in_channel(client, args[0], channels))
+        return;
     for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
     {
         if ((*it)->getName() == args[0])
@@ -205,20 +225,56 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
 
 void Command::ping(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
-    if (args.size() == 0)
+    std::vector<Client *> users = server->getUsers();
+    if (args.size() != 1)
     {
         client->reply("invalid arguments");
+        client->reply("PING <server or nickname>");
         return;
     }
-    client->reply("PONG " + args[0]);
+    if (args[0] == "Problem_irc")
+    {
+        client->reply("PONG Problem_irc");
+        return;
+    }
+    for (std::vector<std::string >::iterator it = args.begin(); it != args.end(); it++)
+    {
+        for (std::vector<Client *>::iterator it2 = users.begin(); it2 != users.end(); it2++)
+        {
+            if ((*it2)->getUsername() == *it || (*it2)->getNickname() == *it || (*it2)->getRealname() == *it)
+            {
+                std::string msg = "PONG " + *it;
+                client->reply(msg);
+            }
+        }
+    }
 }
 
 void Command::pong(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
-    (void)client;
-    (void)args;
+    std::vector<Client *> users = server->getUsers();
+    if (args.size() != 1)
+    {
+        client->reply("invalid arguments");
+        client->reply("PONG <server or nickname>");
+        return;
+    }
+    if (args[0] == "Problem_irc")
+    {
+        client->reply("PING Problem_irc");
+        return;
+    }
+    for (std::vector<std::string >::iterator it = args.begin(); it != args.end(); it++)
+    {
+        for (std::vector<Client *>::iterator it2 = users.begin(); it2 != users.end(); it2++)
+        {
+            if ((*it2)->getUsername() == *it || (*it2)->getNickname() == *it || (*it2)->getRealname() == *it)
+            {
+                std::string msg = "PING " + *it;
+                client->reply(msg);
+            }
+        }
+    }
 }
 
 void Command::pass(Client *client, std::vector<std::string> args, Server *server)
