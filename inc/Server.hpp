@@ -28,11 +28,12 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+#include "Channel.hpp"
 
 # define BUFFER_SIZE 1024
 
 class Client;
-
+class Channel;
 
 class Server
 {
@@ -44,7 +45,7 @@ class Server
         int _socket; // socket is an endpoint for communication
         struct sockaddr_in _client_address; // sockaddr_in is a structure containing an internet address (IPv4)
         struct pollfd *_fds;
-        // std::vector<Channel *> _chanels; // channels is a list of channels
+        std::vector<Channel *> _channels; // channels is a list of channels
         std::vector<Client *> _users;
     public:
         Server();
@@ -61,7 +62,12 @@ class Server
         void removeClient(int fd);
         void handleCommands(Client *client, std::string &command);
         std::vector<Client *> getUsers() const;
-        
+        std::vector<Channel *> getChannels() const;
+        void addChannel(Channel *channel, Client *client);
+        void removeChannel(Channel *channel, Client *client);
+        void addClientToChannel(Client *client, Channel *channel);
+        void removeClientFromChannel(Client *client, Channel *channel);
+        // void sendMessageToChannel(Client *client, Channel *channel, std::string message);
 };
 
 # endif

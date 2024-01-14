@@ -5,51 +5,41 @@ Channel::Channel(std::string name, Client *client)
 {
     this->_name = name;
     this->_clients.push_back(client);
-    this->_topic = "";
-    this->_mode = "";
-    this->_key = "";
-    this->_limit = 0;
-    this->_banMask = "";
-    this->_inviteMask = "";
-    this->_exceptionMask = "";
-    this->_creationTime = time(NULL);
 }
 
 Channel::~Channel()
 {
 }
 
-std::string Channel::getName()
+std::string Channel::setName(std::string name)
+{
+    this->_name = name;
+    return (this->_name);
+}
+
+std::string const Channel::getName() const
 {
     return (this->_name);
 }
 
-std::string Channel::getTopic()
+std::vector<Client *> Channel::getClients()
 {
-    return (this->_topic);
+    return (this->_clients);
 }
 
-std::string Channel::getMode()
+void Channel::addClient(Client *client)
 {
-    return (this->_mode);
+    this->_clients.push_back(client);
 }
 
-std::string Channel::getKey()
+void Channel::removeClient(Client *client)
 {
-    return (this->_key);
-}
-
-int Channel::getLimit()
-{
-    return (this->_limit);
-}
-
-std::string Channel::getBanMask()
-{
-    return (this->_banMask);
-}
-
-std::string Channel::getInviteMask()
-{
-    return (this->_inviteMask);
+    for (size_t i = 0; i < this->_clients.size(); i++)
+    {
+        if (this->_clients[i] == client)
+        {
+            this->_clients.erase(this->_clients.begin() + i);
+            return;
+        }
+    }
 }

@@ -11,11 +11,11 @@
 # **************************************************************************** #
 
 
-CC = c++ -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address,undefined
+CC = c++ -Wall -Wextra -Werror -g -fsanitize=address,undefined
 NAME = ircserv
 OBJECTS = ./obj
 INCLUDES = ./inc
-SRCS = $(addprefix src/, Server.cpp main.cpp Client.cpp Command.cpp)
+SRCS = $(addprefix src/, Server.cpp main.cpp Client.cpp Command.cpp Channel.cpp)
 OBJS = $(addprefix $(OBJECTS)/, $(SRCS:.cpp=.o))
 
 all: $(NAME)
@@ -23,7 +23,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(OBJS) -o $@
 
-$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp)
+$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp)
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@
 

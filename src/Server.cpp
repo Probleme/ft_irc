@@ -302,3 +302,47 @@ std::vector<Client *> Server::getUsers() const
 {
     return this->_users;
 }
+
+std::vector<Channel *> Server::getChannels() const
+{
+    return this->_channels;
+}
+
+void Server::addChannel(Channel *channel, Client *client)
+{
+    Channel *new_channel = new Channel(channel->getName(), client);
+    this->_channels.push_back(new_channel);
+}
+
+void Server::removeChannel(Channel *channel, Client *client)
+{
+    (void)client;
+    for (size_t i = 0; i < this->_channels.size(); i++)
+    {
+        if (this->_channels[i] == channel)
+        {
+            this->_channels.erase(this->_channels.begin() + i);
+            return;
+        }
+    }
+}
+
+void Server::addClientToChannel(Client *client, Channel *channel)
+{
+    channel->addClient(client);
+}
+
+void Server::removeClientFromChannel(Client *client, Channel *channel)
+{
+    channel->removeClient(client);
+}
+
+// void Server::sendMessageToChannel(Client *client, Channel *channel, std::string message)
+// {
+//     std::vector<Client *> clients = channel->getClients();
+//     for (size_t i = 0; i < clients.size(); i++)
+//     {
+//         if (clients[i] != client)
+//             clients[i]->reply(message);
+//     }
+// }

@@ -76,9 +76,24 @@ void Command::user(Client *client, std::vector<std::string> args, Server *server
 
 void Command::join(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
-    (void)client;
-    (void)args;
+    if (args.size() != 1)
+    {
+        client->reply("invalid arguments");
+        return;
+    }
+    std::vector<Channel *> channels = server->getChannels();
+    for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+    {
+        if ((*it)->getName() == args[0])
+        {
+            (*it)->addClient(client);
+            client->reply("Joined channel " + args[0]);
+            return;
+        }
+    }
+    Channel *channel = new Channel(args[0], client);
+    server->addChannel(channel, client);
+    client->reply("Created channel " + args[0]);
 }
 
 void Command::part(Client *client, std::vector<std::string> args, Server *server)
@@ -115,9 +130,15 @@ void Command::quit(Client *client, std::vector<std::string> args, Server *server
 
 void Command::list(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
-    (void)client;
-    (void)args;
+    if (args.size() == 0)
+    {
+        std::vector<Channel *> channels = server->getChannels();
+        for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+        {
+            std::string msg = (*it)->getName() + ": Connected clients : " + std::to_string((*it)->getClients().size());
+            client->reply(msg);
+        }
+    }
 }
 
 void Command::who(Client *client, std::vector<std::string> args, Server *server)
@@ -146,9 +167,33 @@ void Command::who(Client *client, std::vector<std::string> args, Server *server)
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
-    (void)client;
-    (void)args;
+    if (args.size() != 2)
+    {
+        client->reply("Invalid arguments");
+        return;
+    }
+    std::vector<Channel *> channels = server->getChannels();
+    for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
+    {
+        if ((*it)->getName() == args[0])
+        {
+            std::vector<Client *> clients = (*it)->getClients();
+            for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
+            {
+                if ((*it2)->getNickname() == args[1])
+                {
+                    (*it)->removeClient(*it2);
+                    client->reply("kicked " + args[1] + " from channel " + args[0]);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            client->reply("channel " + args[0] + " doesn't exist");
+            return;
+        }
+    }
 }
 
 void Command::mode(Client *client, std::vector<std::string> args, Server *server)
