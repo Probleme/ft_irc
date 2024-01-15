@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:55:20 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/15 12:47:38 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,11 +104,11 @@ void Server::run()
             *poll is used to wait for events on the file descriptors stored in the _fds array.
              The _fds array contains the file descriptors for the server socket and all connected client sockets.
             *The second argument is the number of file descriptors to monitor. It includes the server socket and all connected client sockets.
-            *The third argument is the timeout value. A value of -1 means to wait indefinitely for an event to occur.
+            *The third argument is the timeout value. A value of 0 indicates that poll() should return immediately. A value of -1 indicates that poll() should block indefinitely until an event occurs.
             *When poll is called, it will block the execution of the program until one of the monitored file descriptors becomes ready.
              Once an event occurs, poll will return the number of file descriptors that have events, or it will return a negative value if an error occurs.
         */
-        int poll_count = poll(_fds, _users.size() + 1, -1);
+        int poll_count = poll(_fds, _users.size() + 1, 0);
         if (poll_count < 0)
         {
             std::cerr << "poll failed" << std::endl;
@@ -276,6 +276,7 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream cmd_name(cmd); // get the command name
         std::string name;
         cmd_name >> name; // get the command name by extracting the first word from the message
+        client->setCommand(name);
         /*
             The \r character, known as the carriage return, is used in programming to move the cursor back to the beginning of the line. It does not directly correspond to the action of pressing and releasing the Enter key. However, the behavior of the Enter key can vary depending on the operating system:
             In Windows, pressing the Enter key typically generates two characters: a carriage return (\r) followed by a line feed (\n). This combination is used to start a new line.
@@ -284,7 +285,7 @@ void Server::handleCommands(Client *client, std::string &msg)
         */
         cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
         if (command._commands.find(name) == command._commands.end()) { // if the command does not exist
-            client->reply("Invalid command");
+            // client->reply("Invalid command");
             continue;
         }
         std::vector<std::string> args;
@@ -346,3 +347,4 @@ void Server::removeClientFromChannel(Client *client, Channel *channel)
 //             clients[i]->reply(message);
 //     }
 // }
+

@@ -6,7 +6,7 @@
 #    By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/31 16:22:29 by ataouaf           #+#    #+#              #
-#    Updated: 2024/01/10 11:11:05 by ataouaf          ###   ########.fr        #
+#    Updated: 2024/01/15 12:29:36 by ataouaf          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(OBJS) -o $@
 
-$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp)
+$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp Numerics.hpp)
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@
 

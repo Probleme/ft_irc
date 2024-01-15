@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:36:43 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/15 12:45:59 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ void Client::setPort(int port) { _port = port; }
 
 void Client::setFd(int fd) { _fd = fd; }
 
+void Client::setCommand(std::string command) { _command = command; }
+
 std::string const& Client::getMessage() const { return (_message); }
 
 std::string const& Client::getNickname() const { return (_nickname); }
@@ -45,6 +47,8 @@ std::string const& Client::getRealname() const { return (_realname); }
 std::string const& Client::getServername() const { return (_servername); }
 
 std::string const& Client::getHostname() const { return (_hostname); }
+
+std::string const& Client::getCommand() const { return (_command); }
 
 // int Client::getPassword() const { return (_password); }
 
@@ -84,12 +88,39 @@ void Client::reply(std::string message)
     this->sendMessage();
 }
 
-void Client::reply(std::string message, std::string message2)
+void Client::reply(std::string message, std::string command)
 {
-    std::string msg = message + " " + message2;
-    this->setMessage(msg);
+    if (message == "already registered")
+        this->setMessage(ERR_ALREADYREGISTERED(this->getNickname()));
+    else if (message == "invalid arguments")
+        this->setMessage(ERR_NEEDMOREPARAMS(this->getNickname(), command));
+    else if (message == "already in channel")
+        this->setMessage(ERR_USERONCHANNEL(this->getNickname(), "nick", "channel"));
+    else if (message == "no such nick")
+        this->setMessage(ERR_NOSUCHNICK(this->getNickname(), "nick"));
+    else if (message == "no such channel")
+        this->setMessage(ERR_NOSUCHCHANNEL(this->getNickname(), "channel"));
+    else
+        this->setMessage(message);
     this->sendMessage();
 }
+
+// void Client::reply(std::string message, std::string command, std::string channel)
+// {
+//     if (message == "already registered")
+//         this->setMessage(ERR_ALREADYREGISTERED(this->getNickname()));
+//     else if (message == "invalid arguments")
+//         this->setMessage(ERR_NEEDMOREPARAMS(this->getNickname(), "command"));
+//     else if (message == "already in channel")
+//         this->setMessage(ERR_USERONCHANNEL(this->getNickname(), "nick", "channel"));
+//     else if (message == "no such nick")
+//         this->setMessage(ERR_NOSUCHNICK(this->getNickname(), "nick"));
+//     else if (message == "no such channel")
+//         this->setMessage(ERR_NOSUCHCHANNEL(this->getNickname(), "channel"));
+//     else
+//         this->setMessage(message);
+//     this->sendMessage();
+// }
 
 void Client::sendMessage()
 {
@@ -105,12 +136,12 @@ bool Client::isRegistered()
 {
     if (this->getNickname().empty() && this->getUsername().empty() && this->getRealname().empty())
     {
-        this->reply("ERROR :You have not registered");
+        // this->reply("ERROR :You have not registered");
         return true;
     }
     else
     {
-        this->reply("ERROR :Unauthorized command (already registered)");
+        // this->reply("ERROR :Unauthorized command (already registered)");
         return true;
     }
     return (false);
