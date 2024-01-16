@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:55:20 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/16 11:33:44 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,6 +276,7 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream cmd_name(cmd); // get the command name
         std::string name;
         cmd_name >> name; // get the command name by extracting the first word from the message
+        client->setCommand(name);
         /*
             The \r character, known as the carriage return, is used in programming to move the cursor back to the beginning of the line. It does not directly correspond to the action of pressing and releasing the Enter key. However, the behavior of the Enter key can vary depending on the operating system:
             In Windows, pressing the Enter key typically generates two characters: a carriage return (\r) followed by a line feed (\n). This combination is used to start a new line.
@@ -346,3 +347,4 @@ void Server::removeClientFromChannel(Client *client, Channel *channel)
 //             clients[i]->reply(message);
 //     }
 // }
+

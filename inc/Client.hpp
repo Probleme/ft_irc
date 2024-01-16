@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 16:09:15 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/16 11:25:37 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,14 @@
 # include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
+# include <sstream>
 # include <sys/types.h>
 
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+
+# include "Numerics.hpp"
 
 class Server;
 
@@ -40,6 +43,7 @@ class Client{
         int _port;
         int _fd;
         Server *_server;
+        std::string _command;
     public:
         Client(std::string& host, Server *server, int port, int fd);
         ~Client();
@@ -52,12 +56,14 @@ class Client{
         // void setPassword(int password);
         void setPort(int port);
         void setFd(int fd);
+        void setCommand(std::string command);
         std::string const& getMessage() const;
         std::string const& getNickname() const;
         std::string const& getUsername() const;
         std::string const& getRealname() const;
         std::string const& getServername() const;
         std::string const& getHostname() const;
+        std::string const& getCommand() const;
         // int getPassword() const;
         int getPort() const;
         int getFd() const;
@@ -65,7 +71,8 @@ class Client{
         bool isRegistered();
         void welcome();
         void reply(std::string message);
-        void reply(std::string message, std::string message2);
+        void reply(std::string message, std::string command);
+        // void reply(std::string message, std::string command, std::string channel);
         void sendMessage();
         
         std::vector<std::string> split(std::string str, char c);
