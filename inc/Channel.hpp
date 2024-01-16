@@ -27,6 +27,7 @@ class Channel
     private:
         std::string _name;
         std::vector<Client *> _clients;
+        time_t _ChannelCreatedAt;
     public:
         Channel(std::string name, Client *client);
         ~Channel();
@@ -35,6 +36,7 @@ class Channel
         std::vector<Client *> getClients();
         void addClient(Client *client);
         void removeClient(Client *client);
+        time_t getChannelCreationTime() const;
 
 };
 

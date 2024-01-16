@@ -5,6 +5,8 @@ Channel::Channel(std::string name, Client *client)
 {
     this->_name = name;
     this->_clients.push_back(client);
+    //get the current time and save it in the _ChannelCreatedAt
+    this->_ChannelCreatedAt = time(0);
 }
 
 Channel::~Channel()
@@ -42,4 +44,9 @@ void Channel::removeClient(Client *client)
             return;
         }
     }
+}
+
+time_t Channel::getChannelCreationTime() const
+{
+    return (this->_ChannelCreatedAt);
 }

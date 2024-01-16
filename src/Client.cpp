@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:36:43 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/16 09:34:23 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,15 +103,7 @@ void Client::sendMessage()
 
 bool Client::isRegistered()
 {
-    if (this->getNickname().empty() && this->getUsername().empty() && this->getRealname().empty())
-    {
-        this->reply("ERROR :You have not registered");
-        return true;
-    }
-    else
-    {
-        this->reply("ERROR :Unauthorized command (already registered)");
-        return true;
-    }
-    return (false);
+    if (this->getUsername().empty())
+        return false;
+    return (true);
 }
