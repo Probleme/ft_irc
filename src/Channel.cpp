@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/14 12:16:52 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/14 12:54:58 by ataouaf          ###   ########.fr       */
+/*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
+/*   Updated: 2024/01/16 11:27:26 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ Channel::Channel(std::string name, Client *client)
 {
     this->_name = name;
     this->_clients.push_back(client);
+    //get the current time and save it in the _ChannelCreatedAt
+    this->_ChannelCreatedAt = time(0);
 }
 
 Channel::~Channel()
@@ -54,4 +56,9 @@ void Channel::removeClient(Client *client)
             return;
         }
     }
+}
+
+time_t Channel::getChannelCreationTime() const
+{
+    return (this->_ChannelCreatedAt);
 }
