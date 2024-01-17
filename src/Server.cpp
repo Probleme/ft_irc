@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 11:33:44 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/17 15:50:27 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,7 +285,8 @@ void Server::handleCommands(Client *client, std::string &msg)
         */
         cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
         if (command._commands.find(name) == command._commands.end()) { // if the command does not exist
-            // client->reply("Invalid command");
+            client->setMessage(ERR_UNKNOWNCOMMAND(client->getNickname(), client->getCommand()));
+            client->sendMessage();
             continue;
         }
         std::vector<std::string> args;
@@ -293,9 +294,28 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
-        // if (client->isRegistered())
-        //     return;
+        if (!client->isRegistered() && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
+        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
         command.execute(client, args, name, this);
+        if (client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
+        {
+            client->reply(RPL_WELCOME(client->getNickname()));
+            client->reply(RPL_YOURHOST(client->getNickname(), this->getServerName(), "1.0.0"));
+            client->reply(RPL_CREATED(client->getNickname(), this->getStartTime()));
+            client->reply(RPL_MYINFO(client->getNickname(), this->getServerName(), "1.0.0"));
+            client->reply(RPL_ISUPPORT(client->getNickname()));
+            return;
+        }
     }
 }
 
@@ -347,4 +367,72 @@ void Server::removeClientFromChannel(Client *client, Channel *channel)
 //             clients[i]->reply(message);
 //     }
 // }
+
+
+std::string Server::getServerName() const
+{
+    return this->_server_name;
+}
+
+std::string Server::getPassword()
+{
+    return this->_password;
+}
+
+std::string Server::getStartTime() const
+{
+    // the getStartTime() function returns the current time with newline character at the end of the string so we need to remove it
+    std::string time = this->_start_time;
+    time = time.substr(0, time.length() - 1);
+    return time;
+}
+
+int Server::getPort() const
+{
+    return this->_port;
+}
+
+int Server::getSocket() const
+{
+    return this->_socket;
+}
+
+void Server::setServerName(std::string server_name)
+{
+    this->_server_name = server_name;
+}
+void Server::setPassword(std::string password)
+{
+    this->_password = password;
+}
+
+void Server::setStartTime(std::string start_time)
+{
+    this->_start_time = start_time;
+}
+
+void Server::setPort(int port)
+{
+    this->_port = port;
+}
+
+void Server::setSocket(int socket)
+{
+    this->_socket = socket;
+}
+
+void Server::setClientAddress(struct sockaddr_in client_address)
+{
+    this->_client_address = client_address;
+}
+
+struct pollfd *Server::getFds() const
+{
+    return this->_fds;
+}
+
+void Server::setFds(struct pollfd *fds)
+{
+    this->_fds = fds;
+}
 
