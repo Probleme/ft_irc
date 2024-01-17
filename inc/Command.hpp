@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:00:32 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 17:55:51 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/16 12:59:47 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Command
         void ping(Client *client, std::vector<std::string> args, Server *server);
         void pong(Client *client, std::vector<std::string> args, Server *server);
         void pass(Client *client, std::vector<std::string> args, Server *server);
+        void names(Client *client, std::vector<std::string> args, Server *server);
         void execute(Client *client, std::vector<std::string> args, std::string command, Server *server);
         
 };
