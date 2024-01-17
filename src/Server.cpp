@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 11:33:44 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/17 15:50:27 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,11 +104,11 @@ void Server::run()
             *poll is used to wait for events on the file descriptors stored in the _fds array.
              The _fds array contains the file descriptors for the server socket and all connected client sockets.
             *The second argument is the number of file descriptors to monitor. It includes the server socket and all connected client sockets.
-            *The third argument is the timeout value. A value of -1 means to wait indefinitely for an event to occur.
+            *The third argument is the timeout value. A value of 0 indicates that poll() should return immediately. A value of -1 indicates that poll() should block indefinitely until an event occurs.
             *When poll is called, it will block the execution of the program until one of the monitored file descriptors becomes ready.
              Once an event occurs, poll will return the number of file descriptors that have events, or it will return a negative value if an error occurs.
         */
-        int poll_count = poll(_fds, _users.size() + 1, -1);
+        int poll_count = poll(_fds, _users.size() + 1, 0);
         if (poll_count < 0)
         {
             std::cerr << "poll failed" << std::endl;
@@ -285,7 +285,8 @@ void Server::handleCommands(Client *client, std::string &msg)
         */
         cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
         if (command._commands.find(name) == command._commands.end()) { // if the command does not exist
-            client->reply("Invalid command");
+            client->setMessage(ERR_UNKNOWNCOMMAND(client->getNickname(), client->getCommand()));
+            client->sendMessage();
             continue;
         }
         std::vector<std::string> args;
@@ -293,9 +294,28 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
-        // if (client->isRegistered())
-        //     return;
+        if (!client->isRegistered() && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
+        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
         command.execute(client, args, name, this);
+        if (client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
+        {
+            client->reply(RPL_WELCOME(client->getNickname()));
+            client->reply(RPL_YOURHOST(client->getNickname(), this->getServerName(), "1.0.0"));
+            client->reply(RPL_CREATED(client->getNickname(), this->getStartTime()));
+            client->reply(RPL_MYINFO(client->getNickname(), this->getServerName(), "1.0.0"));
+            client->reply(RPL_ISUPPORT(client->getNickname()));
+            return;
+        }
     }
 }
 
@@ -347,4 +367,72 @@ void Server::removeClientFromChannel(Client *client, Channel *channel)
 //             clients[i]->reply(message);
 //     }
 // }
+
+
+std::string Server::getServerName() const
+{
+    return this->_server_name;
+}
+
+std::string Server::getPassword()
+{
+    return this->_password;
+}
+
+std::string Server::getStartTime() const
+{
+    // the getStartTime() function returns the current time with newline character at the end of the string so we need to remove it
+    std::string time = this->_start_time;
+    time = time.substr(0, time.length() - 1);
+    return time;
+}
+
+int Server::getPort() const
+{
+    return this->_port;
+}
+
+int Server::getSocket() const
+{
+    return this->_socket;
+}
+
+void Server::setServerName(std::string server_name)
+{
+    this->_server_name = server_name;
+}
+void Server::setPassword(std::string password)
+{
+    this->_password = password;
+}
+
+void Server::setStartTime(std::string start_time)
+{
+    this->_start_time = start_time;
+}
+
+void Server::setPort(int port)
+{
+    this->_port = port;
+}
+
+void Server::setSocket(int socket)
+{
+    this->_socket = socket;
+}
+
+void Server::setClientAddress(struct sockaddr_in client_address)
+{
+    this->_client_address = client_address;
+}
+
+struct pollfd *Server::getFds() const
+{
+    return this->_fds;
+}
+
+void Server::setFds(struct pollfd *fds)
+{
+    this->_fds = fds;
+}
 

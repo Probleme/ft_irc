@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 11:25:37 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/16 15:22:08 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class Client{
         std::string _username;
         std::string _nickname;
         std::string _message;
-        // int _password;
+        bool _password;
         int _port;
         int _fd;
         Server *_server;
@@ -53,7 +53,7 @@ class Client{
         void setRealname(std::string realname);
         void setServername(std::string servername);
         void setHostname(std::string hostname);
-        // void setPassword(int password);
+        void setPassword(bool password);
         void setPort(int port);
         void setFd(int fd);
         void setCommand(std::string command);
@@ -64,7 +64,7 @@ class Client{
         std::string const& getServername() const;
         std::string const& getHostname() const;
         std::string const& getCommand() const;
-        // int getPassword() const;
+        bool getPassword() const;
         int getPort() const;
         int getFd() const;
         

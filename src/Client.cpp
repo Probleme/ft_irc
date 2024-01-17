@@ -6,13 +6,13 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 11:29:14 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/17 12:55:46 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
 
-Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _port(port), _fd(fd), _server(server) {(void)_server;}
+Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _server(server) {(void)_server;}
 
 Client::~Client() {}
 
@@ -28,7 +28,7 @@ void Client::setServername(std::string servername) { _servername = servername; }
 
 void Client::setHostname(std::string hostname) { _hostname = hostname; }
 
-// void Client::setPassword(int password) { _password = password; }
+void Client::setPassword(bool password) { _password = password; }
 
 void Client::setPort(int port) { _port = port; }
 
@@ -50,7 +50,7 @@ std::string const& Client::getHostname() const { return (_hostname); }
 
 std::string const& Client::getCommand() const { return (_command); }
 
-// int Client::getPassword() const { return (_password); }
+bool Client::getPassword() const { return (_password); }
 
 int Client::getPort() const { return (_port); }
 
@@ -88,23 +88,6 @@ void Client::reply(std::string message)
     this->sendMessage();
 }
 
-void Client::reply(std::string message, std::string command)
-{
-    if (message == "already registered")
-        this->setMessage(ERR_ALREADYREGISTERED(this->getNickname()));
-    else if (message == "invalid arguments")
-        this->setMessage(ERR_NEEDMOREPARAMS(this->getNickname(), command));
-    else if (message == "already in channel")
-        this->setMessage(ERR_USERONCHANNEL(this->getNickname(), "nick", "channel"));
-    else if (message == "no such nick")
-        this->setMessage(ERR_NOSUCHNICK(this->getNickname(), "nick"));
-    else if (message == "no such channel")
-        this->setMessage(ERR_NOSUCHCHANNEL(this->getNickname(), "channel"));
-    else
-        this->setMessage(message);
-    this->sendMessage();
-}
-
 void Client::sendMessage()
 {
     std::string msg = this->getMessage();
@@ -117,7 +100,7 @@ void Client::sendMessage()
 
 bool Client::isRegistered()
 {
-    if (this->getUsername().empty())
-        return false;
+    if (this->getPassword() == false)
+        return (false);
     return (true);
 }

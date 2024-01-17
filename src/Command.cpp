@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/17 15:54:17 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/17 16:15:04 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Command.hpp"
+
 
 Command::~Command()
 {
@@ -21,19 +22,19 @@ Command::Command()
     _commands["NICK"] = &Command::nick;
     _commands["USER"] = &Command::user;
     _commands["JOIN"] = &Command::join;
-    _commands["PART"] = &Command::part;//
+    _commands["PART"] = &Command::part;
     _commands["PRIVMSG"] = &Command::privmsg;
-    _commands["NOTICE"] = &Command::notice;
-    _commands["INVITE"] = &Command::notice;//!!
+    // _commands["INVITE"] = &Command::invite;
     _commands["QUIT"] = &Command::quit;
-    _commands["LIST"] = &Command::list;//
-    _commands["WHO"] = &Command::who;//
+    _commands["LIST"] = &Command::list;
+    _commands["WHO"] = &Command::who;
     _commands["KICK"] = &Command::kick;
     _commands["MODE"] = &Command::mode;
-    _commands["PING"] = &Command::ping;//
-    _commands["PONG"] = &Command::pong;//
+    _commands["PING"] = &Command::ping;
+    _commands["PONG"] = &Command::pong;
+    _commands["NOTICE"] = &Command::notice;
     _commands["PASS"] = &Command::pass;
-    _commands["NAMES"] = &Command::names;//
+    _commands["NAMES"] = &Command::names;
 }
 
 void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
@@ -49,13 +50,10 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
 void Command::nick(Client *client, std::vector<std::string> args, Server *server)
 {
     std::vector<Client *> users = server->getUsers();
-    if (args.size() != 1)
+    if (args.size() == 0)
     {
-        /*
-            If the server does not receive the <nickname> parameter with the NICK command,
-            it should issue an ERR_NONICKNAMEGIVEN numeric and ignore the NICK command.
-        */
-        client->reply("invalid arguments");
+        client->setMessage(ERR_NONICKNAMEGIVEN(client->getNickname()));
+        client->sendMessage();
         return;
     }
     /*
@@ -65,11 +63,10 @@ void Command::nick(Client *client, std::vector<std::string> args, Server *server
         Servers MAY allow extra characters, as long as they do not introduce ambiguity in other commands
     */
     if (args[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890[]{}\\|") != std::string::npos ||
-        args[0].empty() || args[0].find_first_of("0123456789") == 0)
+            args[0].empty() || args[0].find_first_of("0123456789") == 0)
     {
-        
-        //issue an ERR_ERRONEUSNICKNAME numeric
-        client->reply("invalid nickname");
+        client->setMessage(ERR_ERRONEUSNICKNAME(client->getNickname(), client->getCommand()));
+        client->sendMessage();
         return;
     }
     /*  If the server receives a NICK command from a client where the desired nickname is already in use on the network,
@@ -81,24 +78,34 @@ void Command::nick(Client *client, std::vector<std::string> args, Server *server
         {
             if ((*it2)->getNickname() == *it)
             {
-                //issue an ERR_NICKNAMEINUSE numeric
-                client->reply("nickname already in use");
+                client->setMessage(ERR_NICKNAMEINUSE(client->getNickname()));
+                client->sendMessage();
                 return;
             }
         }
     }
+    std::string old_nickname = client->getNickname();
     client->setNickname(args[0]);
-    client->welcome();
+    client->setMessage(RPL_NICK(old_nickname, client->getUsername(), client->getHostname(), client->getNickname()));
+    client->sendMessage();
 }
 
 void Command::user(Client *client, std::vector<std::string> args, Server *server)
 {
     (void)server;
-    if (args.size() < 4)
+    if (client->isRegistered() && client->getUsername() != "" && client->getRealname() != "")
     {
-        client->reply("invalid arguments");
+        client->setMessage(ERR_ALREADYREGISTERED(client->getNickname()));
+        client->sendMessage();
         return;
     }
+    if (args.size() < 4 || args[0][0] == '\0')
+    {
+        client->setMessage(ERR_NEEDMOREPARAMS(client->getNickname(), client->getCommand()));
+        client->sendMessage();
+        return;
+    }
+    // USER aer 0 * :aer raou Ahmed
     std::string realname;
     if (args.size() > 4 && args[3][0] == ':')
     {
@@ -118,12 +125,6 @@ void Command::user(Client *client, std::vector<std::string> args, Server *server
         If it is empty, the server SHOULD reject the command with ERR_NEEDMOREPARAMS (even if an empty parameter is provided);
          otherwise it MUST use a default value instead.
     */
-    if (args[0].empty())
-    {
-        client->reply("invalid arguments");
-        client->reply("USER <username> <hostname> <servername> :<realname>");
-        return;
-    }
     /*
         The second and third parameters of this command SHOULD be sent as one zero ('0', 0x30) and one asterisk character
         ('*', 0x2A) by the client, as the meaning of these two parameters varies between different versions of the IRC protocol.
@@ -138,14 +139,9 @@ void Command::user(Client *client, std::vector<std::string> args, Server *server
         If a client tries to send the USER command after they have already completed registration with the server,
         the ERR_ALREADYREGISTERED reply should be sent and the attempt should fail.
     */
-    if (client->isRegistered())
-    {
-        client->reply("already registered");
-        return;
-    }
+   // now i wan to check if the user is already registered or not
     client->setUsername(args[0]);
     client->setRealname(args[3]);
-    client->welcome();
 }
 
 bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::vector<Channel *> channels)
@@ -242,6 +238,7 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
     if (args.size() < 1 || args.size() > 2)
     {
         client->setMessage(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
+        client->sendMessage();
         return;
     }
     std::string msg;
@@ -257,6 +254,7 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
             if (!SearchUserInChannel(client, *it))
             {
                 client->setMessage(ERR_NOTONCHANNEL(client->getNickname(), args[0]));
+                client->sendMessage();
                 return;
             }
             (*it)->removeClient(client);
@@ -274,7 +272,9 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
         The text used in the last param of this message may vary.
     */
     client->setMessage(ERR_NOSUCHCHANNEL(client->getNickname(), args[0]));
+    client->sendMessage();
 }
+
 
 /*
     The NAMES command is used to view the nicknames joined to a channel and their channel membership prefixes.
@@ -332,6 +332,7 @@ void Command::names(Client *client, std::vector<std::string> args, Server *serve
                 for (std::vector<Client *>::iterator it3 = clients.begin(); it3 != clients.end(); it3++)
                 {
                     client->setMessage(RPL_NAMERPLY(client->getNickname(), *it, (*it3)->getNickname()));
+                    client->sendMessage();
                 }
             }
         }
@@ -492,6 +493,7 @@ void Command::quit(Client *client, std::vector<std::string> args, Server *server
     client->sendMessage();
     close(client->getFd());
 }
+
 void Command::who(Client *client, std::vector<std::string> args, Server *server)
 {
     std::vector<Client *> users = server->getUsers();
@@ -499,7 +501,7 @@ void Command::who(Client *client, std::vector<std::string> args, Server *server)
     {
         for (std::vector<Client *>::iterator it = users.begin(); it != users.end(); it++)
         {
-            client->setMessage(RPL_ENDOFWHO(client->getNickname(), (*it)->getNickname()));
+            client->setMessage(RPL_ENDOFWHO(client->getNickname())); // mustt be print args in the second argument in RPL_ENDOFWHO
             client->sendMessage();
         }
     }
@@ -509,7 +511,7 @@ void Command::who(Client *client, std::vector<std::string> args, Server *server)
         {
             if ((*it2)->getUsername() == *it || (*it2)->getNickname() == *it || (*it2)->getRealname() == *it)
             {
-                client->setMessage(RPL_ENDOFWHO(client->getNickname(), *it));
+                client->setMessage(RPL_ENDOFWHO(client->getNickname())); // mustt be print args in the second argument in RPL_ENDOFWHO
                 client->sendMessage();
             }
         }
@@ -518,6 +520,7 @@ void Command::who(Client *client, std::vector<std::string> args, Server *server)
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
 {
+    (void)client;
     if (args.size() != 2)
     {
         client->reply("Invalid arguments");
@@ -609,6 +612,30 @@ void Command::pong(Client *client, std::vector<std::string> args, Server *server
             }
         }
     }
+}
+
+void Command::pass(Client *client, std::vector<std::string> args, Server *server)
+{
+    if (args.size() != 1)
+    {
+        client->setMessage(ERR_NEEDMOREPARAMS(client->getNickname(), client->getCommand()));
+        client->sendMessage();
+        return;
+    }
+    if (args[0] != server->getPassword())
+    {
+        client->setMessage(ERR_PASSWDMISMATCH(client->getNickname()));
+        client->sendMessage();
+        return;
+    }
+    if (client->getPassword() == true)
+    {
+        client->setMessage(ERR_ALREADYREGISTERED(client->getNickname()));
+        client->sendMessage();
+        return;
+    }
+    client->setPassword(true);
+    client->reply("Password accepted you have registered");
 }
 
 void Command::mode(Client *client, std::vector<std::string> args, Server *server)
@@ -833,11 +860,4 @@ When the server is done processing the modes, a MODE command is sent to all memb
         client->sendMessage();
     }
                      
-}
-
-void Command::pass(Client *client, std::vector<std::string> args, Server *server)
-{
-    (void)server;
-    (void)client;
-    (void)args;
 }

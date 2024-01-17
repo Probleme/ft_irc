@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/12 20:53:50 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/16 14:21:40 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,22 @@ class Server
 
         std::string dateString();
         void run();
+        std::string getServerName() const;
+        std::string getPassword() ;
+        std::string getStartTime() const;
+        int getPort() const;
+        int getSocket() const;
+        struct sockaddr_in getClientAddress() const;
+        struct pollfd *getFds() const;
+        void setServerName(std::string server_name);
+        void setPassword(std::string password);
+        void setStartTime(std::string start_time);
+        void setPort(int port);
+        void setSocket(int socket);
+        void setClientAddress(struct sockaddr_in client_address);
+        void setFds(struct pollfd *fds);
+
+        
         void setNonBlocking(int fd);
         void setDescriptors();
         void acceptNewConnection();
