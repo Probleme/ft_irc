@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 13:01:24 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 15:47:17 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -306,23 +306,24 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
-        if (!client->isRegistered() && name != "PASS")
-        {
-            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
-            client->sendMessage();
-            return;
-        }
-        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
-        {
-            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
-            client->sendMessage();
-            return;
-        }
+        // if (!client->isRegistered() && name != "PASS")
+        // {
+        //     client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+        //     client->sendMessage();
+        //     return;
+        // }
+        // if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
+        // {
+        //     client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+        //     client->sendMessage();
+        //     return;
+        // }
         command.execute(client, args, name, this);
         if (name == "QUIT")
             return;
-        if (client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
+        if (!client->getIsRegister() && client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
         {
+            client->setIsRegister(true);
             client->reply(RPL_WELCOME(client->getNickname()));
             client->reply(RPL_YOURHOST(client->getNickname(), this->getServerName(), "1.0.0"));
             client->reply(RPL_CREATED(client->getNickname(), this->getStartTime()));
@@ -465,7 +466,7 @@ void Server::sendToAllClientsInChannel(std::string message, Channel *channel, Cl
     }
 }
 
-void Server::checkClientPrivilege(Client *client, Channel *channel)
+bool Server::checkClientPrivilege(Client *client, Channel *channel)
 {
     std::vector<Client *> clients = channel->getClients();
     for (size_t i = 0; i < clients.size(); i++)
@@ -478,19 +479,18 @@ void Server::checkClientPrivilege(Client *client, Channel *channel)
                 for (size_t j = 0; j < channel_operators.size(); j++)
                 {
                     if (channel_operators[j] == client)
-                    {
-                        client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
-                        return;
-                    }
+                        return (true);
                 }
+                return (false);
             }
             else
             {
                 client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
-                return;
+                return (false);
             }
         }
     }
+    return (false);
 }
 
 
@@ -518,3 +518,5 @@ Client *Server::getClientByNickname(std::string nickname)
     }
     return (NULL);
 }
+
+

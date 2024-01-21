@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:03:06 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 10:29:23 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 17:42:10 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,15 +47,16 @@
 #define JOIN_SUCC(nickname, username, client_ip, channel) ":" + (nickname) + "!~" + (username) + "@" + (client_ip) + " JOIN " + (channel)
 
 #define RPL_NICK(client, username,ipaddr, newnick)  ":" + (client) + "!~" + (username) + "@"+ (ipaddr) + " NICK :"+(newnick)
-#define KICK_MSG(client, ipaddr, channel, kicked, reason) ":" + (client) + "!~sad@" + (ipaddr) + " KICK " + (channel) + " " + kicked + " " + reason
+#define KICK_MSG(client, ipaddr, channel, kicked, reason) ":" + (client) + "!~" + (ipaddr) + " KICK " + (channel) + " " + kicked + " " + reason
 #define QUIT_MSG(nickname, username, ipaddr, reason) ":"+ (nickname) + "!~" + (username) + "@" + (ipaddr) + " QUIT :Client Quit" + (reason)
 #define PRIVMSG(client, username, ipaddr, target, message) ":" + (client) + "!~" + (username) + "@" + (ipaddr) + " PRIVMSG " + (target) + " :" + (message)
 #define JOIN_SUCC(nickname, username, client_ip, channel) ":" + (nickname) + "!~" + (username) + "@" + (client_ip) + " JOIN " + (channel)
 #define MODE_MSG(client, username,ipaddr, channel,added_mode, target) ":" + (client) + "!~" + (username) +"@" + (ipaddr) + " MODE " + (channel) + " " +(added_mode) +  target
 #define PART_MSG(nickname, username, ipaddr, channel, reason) ":" + (nickname) + "!~" + (username) + "@" + ipaddr + " PART " + (channel) + " " + (reason)
 #define NOTICE(client, username, ipaddr, target, message) ":" + (client) + "!~" + (username) + "@" + (ipaddr) + " NOTICE " + (target) + " :" + (message)
+#define TOPIC_MSG(client, username, ipaddr, channel, topic) ":" + (client) + "!~" + (username) + "@" + (ipaddr) + " TOPIC " + (channel) + " :" + (topic)
 
-#define RPL_NAMREPLY(client, channel, users_list) ":irc.1337.ma 353 " + (client) + " = " + (channel) + " :@" + (users_list)
+#define RPL_NAMREPLY(client, channel, users_list) ":irc.1337.ma 353 " + (client) + " = " + (channel) + " :" + (users_list)
 #define RPL_CREATIONTIME(client, channel, creation_time) ":irc.1337.ma 329 " + (client) + " " + (channel) + " " + (creation_time)
 #define RPL_ENDOFNAMES(client, channel)  ":irc.1337.ma 366 " + (client) + " " + (channel) + " :End of /NAMES list"
 #define RPL_ENDOFINVITELIST(client) ":irc.1337.ma 337 " + " :End of /INVITE list"
@@ -77,6 +78,7 @@
 #define PONG(client, server) "PONG " + (client) + " :" + (server)
 #define PING(server) "PING " + (server)
 //                "<client> <channel> <username> <host> <server> <nick> <flags> :<hopcount> <realname>"
+
 #define RPL_WHOREPLY(client, channel, username, hostname, servername, nickname, mode, realname) ":irc.1337.ma 352 " + (client) + " " + (channel) + " " + (username) + " " + (hostname) + " " + (servername) + " " + (nickname) + " " + (mode) + " " + (realname)
 
 #endif

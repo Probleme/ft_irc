@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 09:11:20 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 15:47:43 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,10 +87,12 @@ class Server
         void sendToAllClientsInChannel(std::string message, Channel *channel, Client *client);
         // void SendToAllClients(std::string message, Client *client);
         void addChannel2(Channel *channel);
-        void checkClientPrivilege(Client *client, Channel *channel);
+        bool checkClientPrivilege(Client *client, Channel *channel);
         void sendReplyToClient(Client *client, std::string message);
         Client *getClientByNickname(std::string nickname);
         // void sendMessageToChannel(Client *client, Channel *channel, std::string message);
+
+
 };
 
 # endif

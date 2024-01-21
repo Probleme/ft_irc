@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 09:07:52 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 15:05:07 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class Client{
         Server *_server;
         std::string _command;
         time_t _time;
+        bool _isRegister;
     public:
         Client(std::string& host, Server *server, int port, int fd);
         ~Client();
@@ -80,7 +81,8 @@ class Client{
         std::vector<std::string> split(std::string str, char c);
         time_t getTime() const;
 
-        
+        void setIsRegister(bool isRegister);
+        bool getIsRegister() const;
 };
 
 #endif
