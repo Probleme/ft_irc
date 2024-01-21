@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 18:59:32 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 19:03:27 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,12 +241,17 @@ void Server::readFromClient(int i)
         std::string buff = buffer;
         if (buff.at(buff.size() - 1) == '\n') // if the last character is a newline, then the client has sent a complete message
         {
+            if (client->getMessage() != "")
+            {
+                buff = client->getMessage() + buff; // append the client's buffer to the message
+                client->setMessage(""); // clear the client's buffer
+            }
             std::vector<std::string> msg = client->split(buff, '\n'); // split the buffer into separate messages by splitting on the newline character
             client->setMessage(""); // clear the client's buffer
             for (std::vector<std::string>::iterator it = msg.begin(); it != msg.end(); it++) // loop through each message
                 this->handleCommands(client, *it);
         }
-        else
+        else // ctrl + d
             client->setMessage(client->getMessage() + buff); // append the message to the client's buffer until a newline is received
     }
     
