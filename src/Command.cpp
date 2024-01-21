@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 18:25:17 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 18:49:30 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
             std::vector<Client *> clients = (*it)->getClients();
             for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
             {
+                // segfault
                 if ((*it2)->getNickname() == client->getNickname())
                     return true;
             }

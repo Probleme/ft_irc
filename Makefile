@@ -6,12 +6,12 @@
 #    By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/31 16:22:29 by ataouaf           #+#    #+#              #
-#    Updated: 2024/01/21 09:25:19 by aer-raou         ###   ########.fr        #
+#    Updated: 2024/01/21 18:54:02 by aer-raou         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
-CC = c++ -Wall -Wextra -Werror -g -fsanitize=address,undefined
+CC = c++ -Wall -Wextra -Werror #-g -fsanitize=address,undefined
 NAME = ircserv
 OBJECTS = ./obj
 INCLUDES = ./inc

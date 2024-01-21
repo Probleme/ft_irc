@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 15:47:17 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/21 18:59:32 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,13 +268,17 @@ void Server::removeClient(int fd)
 
 bool chekIfCommandValide(std::string command)
 {
-    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "/bot", "NAMES"};
-    for (size_t i = 0; i < 17; i++)
+    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "/bot", "NAMES", "PASS"};
+    for (size_t i = 0; i < 18; i++)
     {
+        std::cout << "command_list[i] :"<< command_list[i] << std::endl;
+        std::cout << "command :"<< command << std::endl;
         if (command == command_list[i])
-            return (false);
+        {
+            return (true);
+        }
     }
-    return (true);
+    return (false);
 }
 
 void Server::handleCommands(Client *client, std::string &msg)
@@ -296,28 +300,28 @@ void Server::handleCommands(Client *client, std::string &msg)
             The carriage return character can be used in various programming scenarios, such as in C where \r is used to move the cursor to the beginning of the line in console output
         */
         cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
-        if (command._commands.find(name) == command._commands.end()) { // if the command does not exist
+        if (!chekIfCommandValide(name)) { // if the command does not exist
             client->setMessage(ERR_UNKNOWNCOMMAND(client->getNickname(), client->getCommand()));
             client->sendMessage();
-            continue;
+            return;
         }
         std::vector<std::string> args;
         std::string buf;
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
-        // if (!client->isRegistered() && name != "PASS")
-        // {
-        //     client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
-        //     client->sendMessage();
-        //     return;
-        // }
-        // if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
-        // {
-        //     client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
-        //     client->sendMessage();
-        //     return;
-        // }
+        if (!client->isRegistered() && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
+        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
+        {
+            client->setMessage(ERR_NOTREGISTERED(client->getNickname()));
+            client->sendMessage();
+            return;
+        }
         command.execute(client, args, name, this);
         if (name == "QUIT")
             return;
