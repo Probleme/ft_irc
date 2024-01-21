@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+         #
+#    By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/31 16:22:29 by ataouaf           #+#    #+#              #
-#    Updated: 2024/01/15 12:29:36 by ataouaf          ###   ########.fr        #
+#    Updated: 2024/01/21 09:25:19 by aer-raou         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ CC = c++ -Wall -Wextra -Werror -g -fsanitize=address,undefined
 NAME = ircserv
 OBJECTS = ./obj
 INCLUDES = ./inc
-SRCS = $(addprefix src/, Server.cpp main.cpp Client.cpp Command.cpp Channel.cpp)
+SRCS = $(addprefix src/, Server.cpp main.cpp Client.cpp Command.cpp Channel.cpp bot.cpp)
 OBJS = $(addprefix $(OBJECTS)/, $(SRCS:.cpp=.o))
 
 all: $(NAME)

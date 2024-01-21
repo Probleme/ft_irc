@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/17 16:03:05 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/21 13:30:52 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,16 @@ Channel::Channel(std::string name, Client *client)
 {
     this->_name = name;
     this->_clients.push_back(client);
+    this->_operator.push_back(client);
     this->_ChannelCreatedAt = time(0);
     this->_mode = "";
-    this->_topic = 0;
+    this->_topic = "";
     this->_key = "";
     this->_banmask = "";
     this->_exceptionmask = "";
-    this->_invitemask = "";
-    this->_userlimit = 0;
-    this->_operator = "";
-    this->_limit = 0;
+    this->_invitemask = 0;
+    this->_userlimit = 100;
+    this->_limit = 100;
 }
 
 Channel::~Channel()
@@ -78,10 +78,11 @@ void Channel::setChannelCreationTime(time_t time)
 
 void Channel::setMode(std::string mode)
 {
+
     this->_mode = mode;
 }
 
-void Channel::setTopic(int topic)
+void Channel::setTopic(std::string topic)
 {
     this->_topic = topic;
 }
@@ -106,7 +107,7 @@ void Channel::setExceptionMask(std::string exceptionmask)
     this->_exceptionmask = exceptionmask;
 }
 
-void Channel::setInviteMask(std::string invitemask)
+void Channel::setInviteMask(int invitemask)
 {
     this->_invitemask = invitemask;
 }
@@ -116,9 +117,26 @@ void Channel::setUserLimit(int userlimit)
     this->_userlimit = userlimit;
 }
 
-void Channel::setChannelOperator(std::string oper)
+void Channel::AddChannelOperator(Client *oper)
 {
-    this->_operator = oper;
+    if (this->CheckClientIsOperator(oper->getNickname()))
+        return;
+    this->_operator.push_back(oper);
+}
+
+void Channel::RemoveChannelOperator(Client *oper)
+{
+    // std::cout<< "this->_operator.size() = " << this->_operator.size() << std::endl;
+    for (size_t i = 0; i <= this->_operator.size(); i++)
+    {
+        // std::cout << "this->_operator[i]->getNickname() = " << this->_operator[i]->getNickname() << std::endl;
+        // std::cout << "oper->getNickname() = " << oper->getNickname() << std::endl;
+        if (this->_operator[i]->getNickname() == oper->getNickname())
+        {
+            this->_operator.erase(this->_operator.begin() + i);
+            return;
+        }
+    }
 }
 
 std::string Channel::getMode() const
@@ -126,7 +144,7 @@ std::string Channel::getMode() const
     return (this->_mode);
 }
 
-int Channel::getTopic() const
+std::string Channel::getTopic() const
 {
     return (this->_topic);
 }
@@ -146,7 +164,7 @@ std::string Channel::getExceptionMask() const
     return (this->_exceptionmask);
 }
 
-std::string Channel::getInviteMask() const
+int Channel::getInviteMask() const
 {
     return (this->_invitemask);
 }
@@ -156,7 +174,7 @@ int Channel::getUserLimit() const
     return (this->_userlimit);
 }
 
-std::string Channel::getChannelOperator() const
+std::vector<Client *> Channel::getChannelOperators() const
 {
     return (this->_operator);
 }
@@ -166,3 +184,45 @@ int Channel::getChannelLimit() const
     return (this->_limit);
 }
 
+std::string Channel::getTopicTime() const
+{
+    return (this->_topicTime);
+}
+
+void Channel::setTopicTime(std::string topicTime)
+{
+    this->_topicTime = topicTime;
+}
+
+bool Channel::CheckClientIsOperator(std::string nickname)
+{
+    for (size_t i = 0; i < this->_operator.size(); i++)
+    {
+        if (this->_operator[i]->getNickname() == nickname)
+            return (true);
+    }
+    return (false);
+}
+
+Client *Channel::getClient(std::string nickname)
+{
+    for (size_t i = 0; i < this->_clients.size(); i++)
+    {
+        if (this->_clients[i]->getNickname() == nickname)
+            return (this->_clients[i]);
+    }
+    return (NULL);
+}
+
+
+void Channel::replyToAllUsersInChannel(std::string message, Client *client)
+{
+    for (size_t i = 0; i < this->_clients.size(); i++)
+    {
+        if (this->_clients[i]->getNickname() != client->getNickname())
+        {
+            this->_clients[i]->setMessage(message);
+            this->_clients[i]->sendMessage();
+        }
+    }
+}

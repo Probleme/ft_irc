@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/17 15:50:27 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/21 13:01:24 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,11 +258,23 @@ void Server::removeClient(int fd)
     {
         if (this->_users[i]->getFd() == fd)
         {
+            close(fd);
             delete this->_users[i];
             this->_users.erase(this->_users.begin() + i);
             break;
         }
     }
+}
+
+bool chekIfCommandValide(std::string command)
+{
+    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "/bot", "NAMES"};
+    for (size_t i = 0; i < 17; i++)
+    {
+        if (command == command_list[i])
+            return (false);
+    }
+    return (true);
 }
 
 void Server::handleCommands(Client *client, std::string &msg)
@@ -307,6 +319,8 @@ void Server::handleCommands(Client *client, std::string &msg)
             return;
         }
         command.execute(client, args, name, this);
+        if (name == "QUIT")
+            return;
         if (client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
         {
             client->reply(RPL_WELCOME(client->getNickname()));
@@ -333,6 +347,11 @@ void Server::addChannel(Channel *channel, Client *client)
 {
     Channel *new_channel = new Channel(channel->getName(), client);
     this->_channels.push_back(new_channel);
+}
+
+void Server:: addChannel2(Channel *channel)
+{
+    this->_channels.push_back(channel);
 }
 
 void Server::removeChannel(Channel *channel, Client *client)
@@ -436,3 +455,66 @@ void Server::setFds(struct pollfd *fds)
     this->_fds = fds;
 }
 
+void Server::sendToAllClientsInChannel(std::string message, Channel *channel, Client *client)
+{
+    std::vector<Client *> clients = channel->getClients();
+    for (size_t i = 0; i < clients.size(); i++)
+    {
+        if (clients[i] != client)
+            clients[i]->reply(message);
+    }
+}
+
+void Server::checkClientPrivilege(Client *client, Channel *channel)
+{
+    std::vector<Client *> clients = channel->getClients();
+    for (size_t i = 0; i < clients.size(); i++)
+    {
+        if (clients[i]->getNickname() == client->getNickname())
+        {
+            std::vector<Client *> channel_operators = channel->getChannelOperators();
+            if (channel_operators.size() > 0)
+            {
+                for (size_t j = 0; j < channel_operators.size(); j++)
+                {
+                    if (channel_operators[j] == client)
+                    {
+                        client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
+                return;
+            }
+        }
+    }
+}
+
+
+// void Server::SendToAllClients(std::string message, Client *client)
+// {
+//     for (size_t i = 0; i < this->_users.size(); i++)
+//     {
+//         if (this->_users[i] != client)
+//             this->_users[i]->reply(client->getNickname() + " " + message);
+//     }
+// }
+
+void Server::sendReplyToClient(Client *client, std::string message)
+{
+    client->reply(message);
+}
+
+Client *Server::getClientByNickname(std::string nickname)
+{
+    std::vector<Client *> clients = this->getUsers();
+    for (size_t i = 0; i < clients.size(); i++)
+    {
+        if (clients[i]->getNickname() == nickname)
+            return (clients[i]);
+    }
+    return (NULL);
+}

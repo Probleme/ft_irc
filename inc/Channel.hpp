@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 12:17:01 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/17 16:01:21 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/20 09:21:12 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,16 @@ class Channel
     private:
         std::string _name;
         std::vector<Client *> _clients;
+        std::vector<Client *> _operator;
         time_t _ChannelCreatedAt;
         std::string _mode;
         std::string _key;
         std::string _banmask;
         std::string _exceptionmask;
-        std::string _invitemask;
-        std::string _operator;
-        int          _userlimit;
-        int         _topic;
+        std::string  _topic;
+        std::string _topicTime;
+        int         _invitemask;
+        int         _userlimit;
         int         _limit;
 
 
@@ -57,29 +58,34 @@ class Channel
         std::string setName(std::string name);
         std::string const getName() const;
         std::vector<Client *> getClients();
+        std::vector<Client *> getChannelOperators() const;
         void addClient(Client *client);
         void removeClient(Client *client);
         time_t getChannelCreationTime() const;
         void setChannelCreationTime(time_t time);
         void setMode(std::string mode);
-        void setTopic(int topic);
+        void setTopic(std::string  topic);
         void setChannelKey(std::string key);
         void setChannelLimit(int limit);
         void setBanMask(std::string banmask);
         void setExceptionMask(std::string exceptionmask);
-        void setInviteMask(std::string invitemask);
+        void setInviteMask(int invitemask);
         void setUserLimit(int userlimit);
-        void setChannelOperator(std::string oper);
+        void AddChannelOperator(Client *oper);
+        void RemoveChannelOperator(Client *oper);
         std::string getMode() const;
         std::string getChannelKey() const;
         std::string getBanMask() const;
         std::string getExceptionMask() const;
-        std::string getInviteMask() const;
-        std::string getChannelOperator() const;
-        int getTopic() const;
+        int getInviteMask() const;
+        std::string getTopic() const;
         int getUserLimit() const;
         int getChannelLimit() const;
-
+        void setTopicTime(std::string time);
+        std::string getTopicTime() const;
+        bool CheckClientIsOperator(std::string nickname);
+        Client *getClient(std::string nickname);
+        void replyToAllUsersInChannel(std::string message, Client *client);
 };
 
 #endif

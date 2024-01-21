@@ -3,16 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/17 12:55:46 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/21 12:59:35 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
 
-Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _server(server) {(void)_server;}
+Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _server(server)
+{
+    (void)_server;
+    this->_time = time(0);
+}
 
 Client::~Client() {}
 
@@ -103,4 +107,9 @@ bool Client::isRegistered()
     if (this->getPassword() == false)
         return (false);
     return (true);
+}
+
+time_t Client::getTime() const
+{
+    return (this->_time);
 }

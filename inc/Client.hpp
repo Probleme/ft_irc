@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 15:22:08 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/21 09:07:52 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 # include <vector>
 # include <map>
 # include <poll.h>
-#include <fcntl.h>
-#include <unistd.h>
+# include <fcntl.h>
+# include <unistd.h>
 # include <sstream>
 # include <sys/types.h>
 
@@ -30,6 +30,7 @@
 # include "Numerics.hpp"
 
 class Server;
+class Channel;
 
 class Client{
     private:
@@ -44,6 +45,7 @@ class Client{
         int _fd;
         Server *_server;
         std::string _command;
+        time_t _time;
     public:
         Client(std::string& host, Server *server, int port, int fd);
         ~Client();
@@ -76,6 +78,7 @@ class Client{
         void sendMessage();
         
         std::vector<std::string> split(std::string str, char c);
+        time_t getTime() const;
 
         
 };
