@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 08:44:25 by aer-raou          #+#    #+#             */
-/*   Updated: 2024/01/21 12:45:32 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 11:59:21 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,9 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
 {
     if (args.size() > 0)
     {
-        if (args[0] == "logtime")
+        if (args.at(0) == "logtime")
         {
-            Client *target = server->getClientByNickname(args[1]);
+            Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 int minutes = (time(0) - target->getTime()) / 60;
@@ -112,17 +112,17 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
                 server->sendReplyToClient(client, message);
             }
         }
-        else if (args[0] == "help")
+        else if (args.at(0) == "help")
         {
             std::string message = "Available commands for bot : \n";
-            message += "/bot help : print all commands available for bot and all commands available for client\n";
-            message += "/bot logtime <client> : return time since client is loged in minutes and seconds\n";
-            message += "/bot random_msg <client> : send a random message to a client\n";
+            message += "bot help : print all commands available for bot and all commands available for client\n";
+            message += "bot logtime <client> : return time since client is loged in minutes and seconds\n";
+            message += "bot random_msg <client> : send a random message to a client\n";
             message += "random_msg example: \n";
             message += "\tSalutations! I'm your trusty bot companion. <nickname> has a message just for you.\n";
             message += "\tHey! I'm the talkative bot. <nickname> has a message waiting for you..\n";
             message += "\tGreetings, human! I'm here to assist. <nickname> is ready for a chat with you.\n";
-            message += "/bot is_logged <client> : check if a client is logged\n";
+            message += "bot is_logged <client> : check if a client is logged\n";
             message += "Available commands for client : \n";
             message += "NICK <nickname> : change your nickname\n";
             message += "USER <username> <hostname> <servername> <realname> : set your username, hostname, servername and realname\n";
@@ -143,9 +143,9 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
             message += "INVITE <client> <channel> : invite a client to a channel\n";
             server->sendReplyToClient(client, message);
         }
-        else if (args[0] == "random_msg")
+        else if (args.at(0) == "random_msg")
         {
-            Client *target = server->getClientByNickname(args[1]);
+            Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 std::string message = RANDOM_MSG(client->getNickname());
@@ -153,19 +153,19 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
             }
             else
             {
-                std::string message = "No such nick, usage : /bot random_msg <client>";
+                std::string message = "No such nick, usage : bot random_msg <client>";
                 server->sendReplyToClient(client, message);
             }
         }
-        else if (args[0] == "is_logged")
+        else if (args.at(0) == "is_logged")
         {
             if (args.size() == 1)
             {
-                std::string message = "Bot : Wrong number of arguments, usage : /bot is_logged <client>";
+                std::string message = "Bot : Wrong number of arguments, usage : bot is_logged <client>";
                 server->sendReplyToClient(client, message);
                 return; 
             }
-            Client *target = server->getClientByNickname(args[1]);
+            Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 std::string message = target->getNickname() + " is logged";
@@ -173,19 +173,19 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
             }
             else
             {
-                std::string message = args[1] + " is not logged";
+                std::string message = args.at(1) + " is not logged";
                 server->sendReplyToClient(client, message);
             }
         }
         else
         {
-            std::string message = "Bot : Unknown command : " + args[0];
+            std::string message = "Bot : Unknown command : " + args.at(0);
             server->sendReplyToClient(client, message);
         }
     }
     else
     {
-        std::string message = "Bot : Wrong number of arguments, usage : /bot <command> <args>";
+        std::string message = "Bot : Wrong number of arguments, usage : bot <command> <args>";
         server->sendReplyToClient(client, message);
     }
 }

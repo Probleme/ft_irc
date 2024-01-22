@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 13:30:52 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 13:55:14 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,14 @@ Channel::Channel(std::string name, Client *client)
 
 Channel::~Channel()
 {
+    // we need to delete all clients in the channel
+    for (size_t i = 0; i < this->_clients.size(); i++)
+        delete this->_clients.at(i);
+    this->_clients.clear();
+    // we need to delete all operators in the channel
+    for (size_t i = 0; i < this->_operator.size(); i++)
+        delete this->_operator.at(i);
+    this->_operator.clear();
 }
 
 std::string Channel::setName(std::string name)
@@ -58,7 +66,7 @@ void Channel::removeClient(Client *client)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
-        if (this->_clients[i] == client)
+        if (this->_clients.at(i) == client)
         {
             this->_clients.erase(this->_clients.begin() + i);
             return;
@@ -129,9 +137,9 @@ void Channel::RemoveChannelOperator(Client *oper)
     // std::cout<< "this->_operator.size() = " << this->_operator.size() << std::endl;
     for (size_t i = 0; i <= this->_operator.size(); i++)
     {
-        // std::cout << "this->_operator[i]->getNickname() = " << this->_operator[i]->getNickname() << std::endl;
+        // std::cout << "this->_operator.at(i)->getNickname() = " << this->_operator.at(i)->getNickname() << std::endl;
         // std::cout << "oper->getNickname() = " << oper->getNickname() << std::endl;
-        if (this->_operator[i]->getNickname() == oper->getNickname())
+        if (this->_operator.at(i)->getNickname() == oper->getNickname())
         {
             this->_operator.erase(this->_operator.begin() + i);
             return;
@@ -198,7 +206,7 @@ bool Channel::CheckClientIsOperator(std::string nickname)
 {
     for (size_t i = 0; i < this->_operator.size(); i++)
     {
-        if (this->_operator[i]->getNickname() == nickname)
+        if (this->_operator.at(i)->getNickname() == nickname)
             return (true);
     }
     return (false);
@@ -208,8 +216,8 @@ Client *Channel::getClient(std::string nickname)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
-        if (this->_clients[i]->getNickname() == nickname)
-            return (this->_clients[i]);
+        if (this->_clients.at(i)->getNickname() == nickname)
+            return (this->_clients.at(i));
     }
     return (NULL);
 }
@@ -219,10 +227,10 @@ void Channel::replyToAllUsersInChannel(std::string message, Client *client)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
-        if (this->_clients[i]->getNickname() != client->getNickname())
+        if (this->_clients.at(i)->getNickname() != client->getNickname())
         {
-            this->_clients[i]->setMessage(message);
-            this->_clients[i]->sendMessage();
+            this->_clients.at(i)->setMessage(message);
+            this->_clients.at(i)->sendMessage();
         }
     }
 }

@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 15:47:43 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 13:43:41 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ class Server
         void setClientAddress(struct sockaddr_in client_address);
         void setFds(struct pollfd *fds);
 
-        
         void setNonBlocking(int fd);
         void setDescriptors();
         void acceptNewConnection();
@@ -90,6 +89,8 @@ class Server
         bool checkClientPrivilege(Client *client, Channel *channel);
         void sendReplyToClient(Client *client, std::string message);
         Client *getClientByNickname(std::string nickname);
+        void sendReplyToClient2(Client *client, std::string message, Client *client2);
+        
         // void sendMessageToChannel(Client *client, Channel *channel, std::string message);
 
 

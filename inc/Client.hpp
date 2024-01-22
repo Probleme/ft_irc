@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 15:05:07 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 13:38:51 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,11 @@ class Client{
         bool _password;
         int _port;
         int _fd;
-        Server *_server;
         std::string _command;
         time_t _time;
         bool _isRegister;
     public:
-        Client(std::string& host, Server *server, int port, int fd);
+        Client(std::string& host, int port, int fd);
         ~Client();
         void setMessage(std::string message);
         void setNickname(std::string nickname);

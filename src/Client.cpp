@@ -6,15 +6,14 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 15:06:46 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 13:54:43 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
 
-Client::Client(std::string& host, Server *server, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _server(server), _isRegister(false)
+Client::Client(std::string& host, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _isRegister(false)
 {
-    (void)_server;
     this->_time = time(0);
 }
 
@@ -66,24 +65,16 @@ std::vector<std::string> Client::split(std::string str, char c)
     std::string tmp;
     for (size_t i = 0; i < str.size(); i++)
     {
-        if (str[i] == c)
+        if (str.at(i) == c)
         {
             res.push_back(tmp);
             tmp.clear();
         }
         else
-            tmp += str[i];
+            tmp += str.at(i);
     }
     res.push_back(tmp);
     return (res);
-}
-
-
-void Client::welcome()
-{
-    std::string welcome = "Welcome to the Internet Relay Network " + this->getNickname() + "!" + this->getUsername() + "@" + this->getHostname();
-    this->setMessage(welcome);
-    this->sendMessage();
 }
 
 void Client::reply(std::string message)
