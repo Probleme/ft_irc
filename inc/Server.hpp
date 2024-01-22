@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/16 14:21:40 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/22 13:43:41 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 #include "Channel.hpp"
+#include "Numerics.hpp"
 
 # define BUFFER_SIZE 1024
 
@@ -69,7 +70,6 @@ class Server
         void setClientAddress(struct sockaddr_in client_address);
         void setFds(struct pollfd *fds);
 
-        
         void setNonBlocking(int fd);
         void setDescriptors();
         void acceptNewConnection();
@@ -83,7 +83,17 @@ class Server
         void removeChannel(Channel *channel, Client *client);
         void addClientToChannel(Client *client, Channel *channel);
         void removeClientFromChannel(Client *client, Channel *channel);
+        void sendToAllClientsInChannel(std::string message, Channel *channel, Client *client);
+        // void SendToAllClients(std::string message, Client *client);
+        void addChannel2(Channel *channel);
+        bool checkClientPrivilege(Client *client, Channel *channel);
+        void sendReplyToClient(Client *client, std::string message);
+        Client *getClientByNickname(std::string nickname);
+        void sendReplyToClient2(Client *client, std::string message, Client *client2);
+        
         // void sendMessageToChannel(Client *client, Channel *channel, std::string message);
+
+
 };
 
 # endif
