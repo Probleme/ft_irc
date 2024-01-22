@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:33:08 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 14:56:18 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Command::Command()
     _commands["PING"] = &Command::ping;
     _commands["PONG"] = &Command::pong;
     _commands["NOTICE"] = &Command::notice;
-    _commands["bot"] = &Command::bot;
+    _commands["/bot"] = &Command::bot;
     _commands["NAMES"] = &Command::names;
 }
 
@@ -775,10 +775,12 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
             {
                 if ((*it2)->getName() == *it)
                 {
+                    if (!check_if_user_is_in_channel(client, *it, channels))
+                        continue;
                     std::vector<Client *> clients = (*it2)->getClients();
                     for (std::vector<Client *>::iterator it3 = clients.begin(); it3 != clients.end(); it3++)
                     {
-                        if ((*it3)->getUsername() == client->getUsername())
+                        if ((*it3)->getNickname() == client->getNickname())
                             continue;
                         (*it3)->reply(PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg));
                     }
