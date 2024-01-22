@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 14:56:18 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 18:21:53 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,10 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
         if ((*it)->getName() == channel_name)
         {
             std::vector<Client *> clients = (*it)->getClients();
+            if (clients.size() == 0)
+                return false;
             for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
             {
-                // segfault
                 if ((*it2)->getNickname() == client->getNickname())
                     return true;
             }
@@ -61,6 +62,7 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
     }
     return false;
 }
+
 
 void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel *>::iterator it, char c, int flag)
 {
@@ -206,7 +208,6 @@ void Command::invite(Client *client, std::vector<std::string> args, Server *serv
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)client;
     if (args.size() < 2)
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "KICK"));

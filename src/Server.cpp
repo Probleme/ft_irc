@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 14:47:41 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 18:23:37 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,24 @@ Server::Server()
 Server::Server(std::string password ,int port) : _server_name("Problem_irc"),_password(password), _start_time(dateString()), _port(port),  _socket(0), _fds()
 {
 }
-Server::~Server() {}
+Server::~Server() {
+    for (size_t i = 0; i < this->_users.size(); i++)
+    {
+        if (this->_fds)
+        {
+            close(this->_fds[i].fd);
+            delete[] this->_fds;
+            this->_fds = NULL;
+        }
+        delete this->_users.at(i);
+    }
+    this->_users.clear();
+    for (size_t i = 0; i < this->_channels.size(); i++)
+        delete this->_channels.at(i);
+    this->_channels.clear();
+    delete this;
+    // we need also to delete all fds
+}
 
 std::string Server::dateString()
 {
@@ -90,6 +107,7 @@ void Server::run()
             else if (i > 0)
                 this->readFromClient(i);
         }
+        // std::cout << "\n\nnumber users : \n\n\n" << this->_users.size() << std::endl;
     }
 }
 
@@ -140,7 +158,7 @@ void Server::readFromClient(int i)
     {
         if (errno != EWOULDBLOCK)
         {
-            std::cerr << "Error: recv() failed for fd " << client->getFd();
+            std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
             this->removeClient(client->getFd()); // remove the client from the list
             this->setDescriptors(); // rebuild the pollfd array
         }
@@ -176,6 +194,17 @@ void Server::readFromClient(int i)
 
 void Server::removeClient(int fd)
 {
+    for (size_t i = 0; i < this->_channels.size(); i++)
+    {
+        for (size_t j = 0; j < this->_channels.at(i)->getClients().size(); j++)
+        {
+            if (this->_channels.at(i)->getClients().at(j)->getFd() == fd)
+            {
+                this->_channels.at(i)->removeClient(this->_channels.at(i)->getClients().at(j));
+                break;
+            }
+        }
+    }
     for (size_t i = 0; i < this->_users.size(); i++)
     {
         if (this->_users.at(i)->getFd() == fd)
@@ -186,6 +215,7 @@ void Server::removeClient(int fd)
             break;
         }
     }
+
 }
 
 bool chekIfCommandValide(std::string command)

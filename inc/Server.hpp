@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:43:41 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 18:21:33 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,16 +84,14 @@ class Server
         void addClientToChannel(Client *client, Channel *channel);
         void removeClientFromChannel(Client *client, Channel *channel);
         void sendToAllClientsInChannel(std::string message, Channel *channel, Client *client);
-        // void SendToAllClients(std::string message, Client *client);
         void addChannel2(Channel *channel);
         bool checkClientPrivilege(Client *client, Channel *channel);
         void sendReplyToClient(Client *client, std::string message);
         Client *getClientByNickname(std::string nickname);
         void sendReplyToClient2(Client *client, std::string message, Client *client2);
-        
-        // void sendMessageToChannel(Client *client, Channel *channel, std::string message);
 
 
 };
+
 
 # endif

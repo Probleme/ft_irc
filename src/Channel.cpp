@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:55:14 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/22 16:49:35 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ Channel::~Channel()
     for (size_t i = 0; i < this->_operator.size(); i++)
         delete this->_operator.at(i);
     this->_operator.clear();
+    delete this;
 }
 
 std::string Channel::setName(std::string name)
