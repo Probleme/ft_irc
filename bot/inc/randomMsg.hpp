@@ -3,15 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   randomMsg.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 10:30:06 by aer-raou          #+#    #+#             */
-/*   Updated: 2024/01/21 11:32:59 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/23 10:56:47 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RANDOM_MSG_HPP
 # define RANDOM_MSG_HPP
+
+#include <iostream>
+#include <string>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <vector>
+
+#define BUFFER_SIZE 1024
+
+// void bot(Client *client, std::vector<std::string> args, Server *server);
 
 #define RANDOM_MSG0(client) "Hi! It's bot o'clock. " + client + " is excited to start a conversation with you."
 #define RANDOM_MSG1(client) "Hello, I'm a bot." + client + " wants to talk to you."

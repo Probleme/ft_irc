@@ -5,17 +5,17 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/12/31 16:22:29 by ataouaf           #+#    #+#              #
-#    Updated: 2024/01/23 10:00:59 by ataouaf          ###   ########.fr        #
+#    Created: 2024/01/23 09:46:16 by ataouaf           #+#    #+#              #
+#    Updated: 2024/01/23 09:58:15 by ataouaf          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
 CC = c++ -Wall -Wextra -Werror -g -fsanitize=address,undefined
-NAME = ircserv
+NAME = bot
 OBJECTS = ./obj
 INCLUDES = ./inc
-SRCS = $(addprefix src/, Server.cpp main.cpp Client.cpp Command.cpp Channel.cpp)
+SRCS = $(addprefix src/, main.cpp bot.cpp)
 OBJS = $(addprefix $(OBJECTS)/, $(SRCS:.cpp=.o))
 
 all: $(NAME)
@@ -23,7 +23,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(OBJS) -o $@
 
-$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp Numerics.hpp)
+$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, randomMsg.hpp)
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@
 

@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 18:21:53 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/23 09:58:59 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ Command::Command()
     _commands["PING"] = &Command::ping;
     _commands["PONG"] = &Command::pong;
     _commands["NOTICE"] = &Command::notice;
-    _commands["/bot"] = &Command::bot;
     _commands["NAMES"] = &Command::names;
 }
 
