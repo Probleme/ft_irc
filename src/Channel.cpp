@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:55:14 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/24 15:42:02 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ Channel::~Channel()
     for (size_t i = 0; i < this->_operator.size(); i++)
         delete this->_operator.at(i);
     this->_operator.clear();
+    delete this;
 }
 
 std::string Channel::setName(std::string name)
@@ -134,11 +135,8 @@ void Channel::AddChannelOperator(Client *oper)
 
 void Channel::RemoveChannelOperator(Client *oper)
 {
-    // std::cout<< "this->_operator.size() = " << this->_operator.size() << std::endl;
     for (size_t i = 0; i <= this->_operator.size(); i++)
     {
-        // std::cout << "this->_operator.at(i)->getNickname() = " << this->_operator.at(i)->getNickname() << std::endl;
-        // std::cout << "oper->getNickname() = " << oper->getNickname() << std::endl;
         if (this->_operator.at(i)->getNickname() == oper->getNickname())
         {
             this->_operator.erase(this->_operator.begin() + i);

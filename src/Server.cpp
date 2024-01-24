@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 14:47:41 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/24 15:46:54 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,23 @@ Server::Server()
 Server::Server(std::string password ,int port) : _server_name("Problem_irc"),_password(password), _start_time(dateString()), _port(port),  _socket(0), _fds()
 {
 }
-Server::~Server() {}
+Server::~Server() {
+    for (size_t i = 0; i < this->_users.size(); i++)
+    {
+        if (this->_fds)
+        {
+            close(this->_fds[i].fd);
+            delete[] this->_fds;
+            this->_fds = NULL;
+        }
+        delete this->_users.at(i);
+    }
+    this->_users.clear();
+    for (size_t i = 0; i < this->_channels.size(); i++)
+        delete this->_channels.at(i);
+    this->_channels.clear();
+    delete this;
+}
 
 std::string Server::dateString()
 {
@@ -57,8 +73,8 @@ void Server::run()
         return;
     }
     _client_address.sin_family = AF_INET;
-    _client_address.sin_addr.s_addr = INADDR_ANY;
     _client_address.sin_port = htons(_port);
+    _client_address.sin_addr.s_addr = INADDR_ANY;
     if (bind(_socket, (struct sockaddr *)&_client_address, sizeof(_client_address)) < 0)
     {
         std::cerr << "bind failed" << std::endl;
@@ -91,6 +107,7 @@ void Server::run()
                 this->readFromClient(i);
         }
     }
+    close(_socket);
 }
 
 void Server::setDescriptors()
@@ -140,7 +157,7 @@ void Server::readFromClient(int i)
     {
         if (errno != EWOULDBLOCK)
         {
-            std::cerr << "Error: recv() failed for fd " << client->getFd();
+            std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
             this->removeClient(client->getFd()); // remove the client from the list
             this->setDescriptors(); // rebuild the pollfd array
         }
@@ -176,6 +193,17 @@ void Server::readFromClient(int i)
 
 void Server::removeClient(int fd)
 {
+    for (size_t i = 0; i < this->_channels.size(); i++)
+    {
+        for (size_t j = 0; j < this->_channels.at(i)->getClients().size(); j++)
+        {
+            if (this->_channels.at(i)->getClients().at(j)->getFd() == fd)
+            {
+                this->_channels.at(i)->removeClient(this->_channels.at(i)->getClients().at(j));
+                break;
+            }
+        }
+    }
     for (size_t i = 0; i < this->_users.size(); i++)
     {
         if (this->_users.at(i)->getFd() == fd)
@@ -186,12 +214,13 @@ void Server::removeClient(int fd)
             break;
         }
     }
+
 }
 
 bool chekIfCommandValide(std::string command)
 {
-    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "/bot", "NAMES", "PASS"};
-    for (size_t i = 0; i < 18; i++)
+    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "NAMES", "PASS"};
+    for (size_t i = 0; i < 17; i++)
     {
         if (command == command_list[i])
             return (true);

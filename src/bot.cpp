@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/21 08:44:25 by aer-raou          #+#    #+#             */
-/*   Updated: 2024/01/22 14:55:50 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/24 14:51:53 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,65 +96,88 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
     {
         if (args.at(0) == "logtime")
         {
+            if (args.size() == 1)
+            {
+                int minutes = (time(0) - client->getTime()) / 60;
+                int seconds = (time(0) - client->getTime()) % 60;
+                std::string message = client->getNickname() + " is loged since " + std::to_string(minutes) + " minutes and " + std::to_string(seconds) + " seconds";
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
+                return;
+            }
             Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 int minutes = (time(0) - target->getTime()) / 60;
                 int seconds = (time(0) - target->getTime()) % 60;
                 std::string message = target->getNickname() + " is loged since " + std::to_string(minutes) + " minutes and " + std::to_string(seconds) + " seconds";
-                server->sendReplyToClient(client, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
             }
             else
             {
-                int minutes = (time(0) - client->getTime()) / 60;
-                int seconds = (time(0) - client->getTime()) % 60;
-                std::string message = client->getNickname() + " is loged since " + std::to_string(minutes) + " minutes and " + std::to_string(seconds) + " seconds";
-                server->sendReplyToClient(client, message);
+                std::string message = "No such nick, usage : bot logtime <client>";
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
             }
         }
         else if (args.at(0) == "help")
         {
-            std::string message = "Available commands for bot : \n";
-            message += "bot help : print all commands available for bot and all commands available for client\n";
-            message += "bot logtime <client> : return time since client is loged in minutes and seconds\n";
-            message += "bot random_msg <client> : send a random message to a client\n";
-            message += "random_msg example: \n";
-            message += "\tSalutations! I'm your trusty bot companion. <nickname> has a message just for you.\n";
-            message += "\tHey! I'm the talkative bot. <nickname> has a message waiting for you..\n";
-            message += "\tGreetings, human! I'm here to assist. <nickname> is ready for a chat with you.\n";
-            message += "bot is_logged <client> : check if a client is logged\n";
-            message += "Available commands for client : \n";
-            message += "NICK <nickname> : change your nickname\n";
-            message += "USER <username> <hostname> <servername> <realname> : set your username, hostname, servername and realname\n";
-            message += "JOIN <channel> : join a channel\n";
-            message += "PART <channel> : leave a channel\n";
-            message += "PRIVMSG <client> <message> : send a private message to a client\n";
-            message += "NOTICE <client> <message> : send a notice to a client\n";
-            message += "QUIT <message> : quit the server\n";
-            message += "LIST : list all channels\n";
-            message += "WHO : list all clients\n";
-            message += "KICK <client> <channel> : kick a client from a channel\n";
-            message += "MODE <channel> <mode> : set mode for a channel\n";
-            message += "PING <server> : ping a server\n";
-            message += "PONG <server> : pong a server\n";
-            message += "PASS <password> : set password for your client\n";
-            message += "NAMES <channel> : list all clients in a channel\n";
-            message += "TOPIC <channel> <topic> : set topic for a channel\n";
-            message += "INVITE <client> <channel> : invite a client to a channel\n";
-            server->sendReplyToClient(client, message);
+            std::vector<std::string> messages;
+            messages.push_back("Available commands for bot :\r\n");
+            messages.push_back("bot help : print all commands available for bot and all commands available for client\r\n");
+            messages.push_back("bot logtime <client> : return time since client is loged in minutes and seconds\r\n");
+            messages.push_back("bot random_msg <client> : send a random message to a client\r\n");
+            messages.push_back("random_msg example: \r\n");
+            messages.push_back("\tSalutations! I'm your trusty bot companion. <nickname> has a message just for you.\r\n");
+            messages.push_back("\tHey! I'm the talkative bot. <nickname> has a message waiting for you..\r\n");
+            messages.push_back("\tGreetings, human! I'm here to assist. <nickname> is ready for a chat with you.\r\n");
+            messages.push_back("bot is_logged <client> : check if a client is logged\r\n");
+            messages.push_back("Available commands for client : \r\n");
+            messages.push_back("NICK <nickname> : change your nickname\r\n");
+            messages.push_back("USER <username> <hostname> <servername> <realname> : set your username, hostname, servername and realname\r\n");
+            messages.push_back("JOIN <channel> : join a channel\r\n");
+            messages.push_back("PART <channel> : leave a channel\r\n");
+            messages.push_back("PRIVMSG <client> <message> : send a private message to a client\r\n");
+            messages.push_back("NOTICE <client> <message> : send a notice to a client\r\n");
+            messages.push_back("QUIT <message> : quit the server\r\n");
+            messages.push_back("LIST : list all channels\r\n");
+            messages.push_back("WHO : list all clients\r\n");
+            messages.push_back("KICK <client> <channel> : kick a client from a channel\r\n");
+            messages.push_back("MODE <channel> <mode> : set mode for a channel\r\n");
+            messages.push_back("PING <server> : ping a server\r\n");
+            messages.push_back("PONG <server> : pong a server\r\n");
+            messages.push_back("PASS <password> : set password for your client\r\n");
+            messages.push_back("NAMES <channel> : list all clients in a channel\r\n");
+            messages.push_back("TOPIC <channel> <topic> : set topic for a channel\r\n");
+            messages.push_back("INVITE <client> <channel> : invite a client to a channel\r\n");
+            for (std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); it++)
+            {
+                 std::string message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), *it);
+                client->reply(message);
+            }
         }
         else if (args.at(0) == "random_msg")
         {
+            if (args.size() == 1)
+            {
+                std::string message = "Bot : Wrong number of arguments, usage : bot random_msg <client>";
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
+                return;
+            }
             Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 std::string message = RANDOM_MSG(client->getNickname());
-                server->sendReplyToClient(target, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(1), message);
+                target->reply(message);
             }
             else
             {
                 std::string message = "No such nick, usage : bot random_msg <client>";
-                server->sendReplyToClient(client, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
             }
         }
         else if (args.at(0) == "is_logged")
@@ -162,30 +185,35 @@ void Command::bot(Client *client, std::vector<std::string> args, Server *server)
             if (args.size() == 1)
             {
                 std::string message = "Bot : Wrong number of arguments, usage : bot is_logged <client>";
-                server->sendReplyToClient(client, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
                 return; 
             }
             Client *target = server->getClientByNickname(args.at(1));
             if (target)
             {
                 std::string message = target->getNickname() + " is logged";
-                server->sendReplyToClient(client, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
             }
             else
             {
                 std::string message = args.at(1) + " is not logged";
-                server->sendReplyToClient(client, message);
+                message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+                client->reply(message);
             }
         }
         else
         {
             std::string message = "Bot : Unknown command : " + args.at(0);
-            server->sendReplyToClient(client, message);
+            message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+            client->reply(message);
         }
     }
     else
     {
         std::string message = "Bot : Wrong number of arguments, usage : bot <command> <args>";
-        server->sendReplyToClient(client, message);
+        message = PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), client->getNickname(), message);
+        client->reply(message);
     }
 }

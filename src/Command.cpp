@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 14:56:18 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/24 15:55:40 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,27 @@ Command::Command()
     _commands["QUIT"] = &Command::quit;
     _commands["LIST"] = &Command::list;
     _commands["WHO"] = &Command::who;
-    _commands["PING"] = &Command::ping;
-    _commands["PONG"] = &Command::pong;
     _commands["NOTICE"] = &Command::notice;
     _commands["/bot"] = &Command::bot;
     _commands["NAMES"] = &Command::names;
+    _commands["PING"] = &Command::ping;
+    _commands["PONG"] = &Command::pong;
 }
 
 void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
 {
+     if (command == "PRIVMSG" && args[0] == "bot")
+    {
+        command = "/bot";
+        args.erase(args.begin());
+    }
+    if (args.size() > 0 && args.at(0).at(0) == ':')
+        args.at(0).erase(args.at(0).begin());
+    std::cout << "command: " << command << std::endl;
+    for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++)
+        std::cout << "args: " << *it << std::endl;
     (this->*_commands[command])(client, args, server);
+    std::cout << "444" << std::endl;
 }
 
 bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::vector<Channel *> channels)
@@ -53,7 +64,6 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
             std::vector<Client *> clients = (*it)->getClients();
             for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
             {
-                // segfault
                 if ((*it2)->getNickname() == client->getNickname())
                     return true;
             }
@@ -206,7 +216,6 @@ void Command::invite(Client *client, std::vector<std::string> args, Server *serv
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)client;
     if (args.size() < 2)
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "KICK"));
@@ -983,3 +992,4 @@ void Command::pong(Client *client, std::vector<std::string> args, Server *server
         }
     }
 }
+
