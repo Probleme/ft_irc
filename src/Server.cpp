@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 10:25:33 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 12:59:58 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,10 +435,7 @@ bool Server::checkClientPrivilege(Client *client, Channel *channel)
                 return (false);
             }
             else
-            {
-                client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
                 return (false);
-            }
         }
     }
     return (false);

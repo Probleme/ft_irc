@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 12:02:06 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 12:56:17 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,9 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
     {
         command = "/bot";
         args.erase(args.begin());
+        if (args.size() > 0 && args.at(0).at(0) == ':')
+            args.at(0).erase(args.at(0).begin());
     }
-    if (args.size() > 0 && args.at(0).at(0) == ':')
-        args.at(0).erase(args.at(0).begin());
     (this->*_commands[command])(client, args, server);
 }
 
@@ -293,7 +293,10 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
             else
             {
                 if (!server->checkClientPrivilege(client, *it))
+                {
+                    client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
                     return;
+                }
                 if (args.at(1) == ":")
                 {
                     (*it)->setTopic("");
