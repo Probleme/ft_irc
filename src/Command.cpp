@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/23 09:58:59 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/25 14:44:47 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,22 @@ Command::Command()
     _commands["QUIT"] = &Command::quit;
     _commands["LIST"] = &Command::list;
     _commands["WHO"] = &Command::who;
+    _commands["NOTICE"] = &Command::notice;
+    _commands["/bot"] = &Command::bot;
+    _commands["NAMES"] = &Command::names;
     _commands["PING"] = &Command::ping;
     _commands["PONG"] = &Command::pong;
-    _commands["NOTICE"] = &Command::notice;
-    _commands["NAMES"] = &Command::names;
 }
 
 void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
 {
+     if (command == "PRIVMSG" && args[0] == "bot")
+    {
+        command = "/bot";
+        args.erase(args.begin());
+        if (args.size() > 0 && args.at(0).at(0) == ':')
+            args.at(0).erase(args.at(0).begin());
+    }
     (this->*_commands[command])(client, args, server);
 }
 
@@ -50,8 +58,6 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
         if ((*it)->getName() == channel_name)
         {
             std::vector<Client *> clients = (*it)->getClients();
-            if (clients.size() == 0)
-                return false;
             for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
             {
                 if ((*it2)->getNickname() == client->getNickname())
@@ -61,7 +67,6 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
     }
     return false;
 }
-
 
 void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel *>::iterator it, char c, int flag)
 {
@@ -79,15 +84,16 @@ void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel
     }
 }
 
-void SearchUserInChannel(Client *client, Channel *channel)
+bool SearchUserInChannel(Client *client, Channel *channel)
 {
     std::vector<Client *> clients = channel->getClients();
     for (std::vector<Client *>::iterator it = clients.begin(); it != clients.end(); it++)
     {
         if ((*it)->getUsername() == client->getUsername())
-            return;
+            return true;
     }
     client->reply(ERR_NOTONCHANNEL(client->getNickname(), channel->getName()));
+    return false;
 }
 
 void Command::pass(Client *client, std::vector<std::string> args, Server *server)
@@ -177,32 +183,31 @@ void Command::invite(Client *client, std::vector<std::string> args, Server *serv
     }
     for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
     {
-        std::vector<Client *> clients = (*it)->getClients();
-        for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
+        if (args.at(1) == (*it)->getName())
         {
-            if ((*it2)->getNickname() == args.at(0))
+            Client *clientInvited = server->getClientByNickname(args.at(0));
+            if (clientInvited == nullptr)
             {
-                client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+                client->reply(ERR_NOSUCHNICK(client->getNickname(), args.at(0)));
                 return;
             }
-        }
-        if ((*it)->getName() == args.at(1))
-        {
-            SearchUserInChannel(client, *it);
-            if ((*it)->getMode().find('i') != std::string::npos)
-            {
-                client->reply(ERR_INVITEONLYCHAN(client->getNickname(), args.at(1)));
-                return;
-            }
-            if ((*it)->CheckClientIsOperator(client->getNickname()))
+            if ((*it)->CheckClientIsOperator(client->getNickname()) == false)
             {
                 client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(1)));
                 return;
             }
+            if (check_if_user_is_in_channel(clientInvited, args.at(1), channels))
+            {
+                client->reply(ERR_USERONCHANNEL(client->getNickname(), args.at(0), args.at(1)));
+                return;
+            }
             client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+            clientInvited->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+            clientInvited->setIsInvited(true);
             return;
         }
     }
+    client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), args.at(1)));
 }
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
@@ -268,7 +273,8 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
     {
         if ((*it)->getName() == args.at(0))
         {
-            SearchUserInChannel(client, *it);
+            if (!SearchUserInChannel(client, *it))
+                return;
             if (args.size() == 1)
             {
                 if ((*it)->getTopic() == "")
@@ -288,10 +294,18 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
             }
             else
             {
-                if (!server->checkClientPrivilege(client, *it))
+                if (!server->checkClientPrivilege(client, *it) && (*it)->getMode().find('t') != std::string::npos)
+                {
+                    client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
                     return;
+                }
                 if (args.at(1) == ":")
                 {
+                    // if ((*it)->getMode().find('t') != std::string::npos)
+                    // {
+                    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
+                    //     return;
+                    // }
                     (*it)->setTopic("");
                     (*it)->setTopicTime(server->getStartTime());
                     client->reply(RPL_TOPIC(client->getNickname(), args.at(0), (*it)->getTopic()));
@@ -337,14 +351,15 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
                     return;
                 }
-                SearchUserInChannel(client, *it);
+                if (!SearchUserInChannel(client, *it))
+                    continue;
                 if (args.size() == 1)
                 {
                     client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), ' '));
                     return;
                 }
                 int flag = 1;
-                for (int i = 0; args.at(1).at(i)  ; i++)
+                for (int i = 0; args[1][i] ; i++)
                 {
                     if (args.at(1).at(i) == '+')
                         flag = 1;
@@ -374,23 +389,24 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     }
                     else if (args.at(1).at(i) == 'k')
                     {
-                        if (args.size() == 2)
+                        if (args.size() == 2 && flag == 1)
                         {
                             client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<key>"));
-                            if (!args.at(1).at(i + 1))
+                            if (!args.at(1)[i + 1])
                                 return;
                             continue;
                             // i++;
                             // goto label;
                         }
                         else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos)
+                        {
                             SetModeAndSandMessage(client, args.at(0), it, 'k', 1);
+                            (*it)->setChannelKey(args.at(2));
+                        }
                         else if (flag == 2 && (*it)->getMode().find('k') != std::string::npos)
                         {
-                            if (args.at(2) != (*it)->getChannelKey() || args.at(2) == "")
-                                client->reply(ERR_BADCHANNELKEY(client->getNickname(), args.at(0)));
-                            else
-                                SetModeAndSandMessage(client, args.at(0), it, 'k', 2);
+                            SetModeAndSandMessage(client, args.at(0), it, 'k', 2);
+                            (*it)->setChannelKey("");
                             return;
                         }
                     }
@@ -398,6 +414,16 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     {
                         if (flag == 1 && (*it)->CheckClientIsOperator(client->getNickname()))
                         {
+                            if (args.size() == 2)
+                            {
+                                client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<nickname>"));
+                                return;
+                            }
+                            if (check_if_user_is_in_channel(client, args.at(2), channels) == false)
+                            {
+                                client->reply(ERR_NOSUCHNICK(client->getNickname(), args.at(2)));
+                                return;
+                            }
                             (*it)->AddChannelOperator((*it)->getClient(args.at(2)));
                             client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "+o " + args.at(2)));
                         }
@@ -412,16 +438,28 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         if (args.size() == 2 && flag == 1)
                         {
                             client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit>"));
-                            if (!args.at(1).at(i + 1))
+                            if (!args.at(1)[i + 1])
                                 return;
                             continue;
                             // i++;
                             // goto label;
                         }
                         if (flag == 1 && (*it)->getMode().find('l') == std::string::npos)
+                        {
+                            if (std::stoi(args.at(2)) <= 0 || std::stoi(args.at(2)) < (int)(*it)->getClients().size())
+                            {
+                                client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
+                                return;
+                            }
+                            (*it)->setChannelLimit(std::stoi(args.at(2)));
+                            (*it)->setChannelLimit(std::stoi(args.at(2)));
                             SetModeAndSandMessage(client, args.at(0), it, 'l', 1);
+                        }
                         else if (flag == 2 && (*it)->getMode().find('l') != std::string::npos)
+                        {
+                            (*it)->setChannelLimit(100);
                             SetModeAndSandMessage(client, args.at(0), it, 'l', 2);
+                        }    
                     }
                     else
                         client->reply(ERR_UNKNOWNMODE(client->getNickname(), args.at(1).at(i)));
@@ -464,7 +502,7 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
             valid_channel_name = false;
         if (!valid_channel_name)
         {
-            client->reply(ERR_BADCHANNELKEY(client->getNickname(), *it));
+            client->reply(ERR_BADCHANMASK(*it));
             continue;
         }
         if (check_if_user_is_in_channel(client, *it, channels))
@@ -521,11 +559,25 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         if (exist_channel->getMode().find('i') != std::string::npos)
         {
+            if (client->getIsInvited())
+            {
+                if (exist_channel->getMode().find('k') != std::string::npos)
+                    goto label;
+                exist_channel->addClient(client);
+                client->reply(RPL_TOPIC(client->getNickname(), *it, exist_channel->getTopic()));
+                client->reply(RPL_TOPICWHOTIME(client->getNickname(), *it, exist_channel->getTopic(), exist_channel->getTopicTime()));
+                client->reply(RPL_NAMREPLY(client->getNickname(), *it, client->getNickname()));
+                client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
+                server->sendToAllClientsInChannel(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()), exist_channel,client);
+                client->reply(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()));
+                continue;
+            }
             client->reply(ERR_INVITEONLYCHAN(client->getNickname(), *it));
             continue;
         }
         else if (exist_channel->getMode().find('k') != std::string::npos)
         {
+            label:
             if (keys.at(n) != exist_channel->getChannelKey())
             {
                 client->reply(ERR_BADCHANNELKEY(client->getNickname(), *it));
@@ -583,13 +635,14 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
         {
             if ((*it2)->getName() == *it)
             {
-                SearchUserInChannel(client, *it2);
+                if (!SearchUserInChannel(client, *it2))
+                    continue;
                 (*it2)->removeClient(client);
                 client->reply("left channel " + *it);
                 if (msg != "")
                     client->reply(msg);
                 server->sendToAllClientsInChannel(PART_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg), *it2, client);
-                goto label;
+                break;
             }
             else if ((*it2) == channels.back() && (*it2)->getName() != *it)
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), *it));
@@ -946,7 +999,7 @@ void Command::ping(Client *client, std::vector<std::string> args, Server *server
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "PING"));
         return;
     }
-    else if (!args.at(0).at(0))
+    else if (!args[0][0])
     {
         client->reply(ERR_NOORIGIN(client->getNickname()));
         return;
@@ -983,3 +1036,4 @@ void Command::pong(Client *client, std::vector<std::string> args, Server *server
         }
     }
 }
+

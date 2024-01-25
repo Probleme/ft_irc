@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/23 10:34:24 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/25 12:59:58 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,6 +199,15 @@ void Server::removeClient(int fd)
         {
             if (this->_channels.at(i)->getClients().at(j)->getFd() == fd)
             {
+                std::vector<Client *> channelOperators = this->_channels.at(i)->getChannelOperators();
+                for (size_t k = 0; k < channelOperators.size(); k++)
+                {
+                    if (channelOperators.at(k)->getFd() == fd)
+                    {
+                        this->_channels.at(i)->RemoveChannelOperator(channelOperators.at(k));
+                        break;
+                    }
+                }
                 this->_channels.at(i)->removeClient(this->_channels.at(i)->getClients().at(j));
                 break;
             }
@@ -426,10 +435,7 @@ bool Server::checkClientPrivilege(Client *client, Channel *channel)
                 return (false);
             }
             else
-            {
-                client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), channel->getName()));
                 return (false);
-            }
         }
     }
     return (false);

@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:38:51 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:00:42 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class Client{
         std::string _command;
         time_t _time;
         bool _isRegister;
+        bool _isInvited;
     public:
         Client(std::string& host, int port, int fd);
         ~Client();
@@ -82,6 +83,9 @@ class Client{
 
         void setIsRegister(bool isRegister);
         bool getIsRegister() const;
+
+        void setIsInvited(bool isInvited);
+        bool getIsInvited() const;
 };
 
 #endif
