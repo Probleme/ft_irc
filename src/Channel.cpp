@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 12:01:57 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:38:09 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,21 @@ void Channel::removeClient(Client *client)
     {
         if (this->_clients.at(i) == client)
         {
+            if (this->CheckClientIsOperator(client->getNickname()))
+            {
+                this->RemoveChannelOperator(client);
+                if (this->_operator.size() == 0)
+                {
+                    this->_clients.erase(this->_clients.begin() + i);
+                    if (this->_clients.size() != 0)
+                    {
+                    
+                    std::cout << "the new operator is : " << this->_clients.at(0)->getNickname() << std::endl;
+                    this->_operator.push_back(this->_clients.at(0));
+                    }
+                    return;
+                }
+            }
             client->setIsInvited(false);
             this->_clients.erase(this->_clients.begin() + i);
             return;
