@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 11:00:51 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:50:27 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ Client::Client(std::string& host, int port, int fd) : _hostname(host), _nickname
     this->_time = time(0);
 }
 
-Client::~Client() {}
+Client::~Client() {
+}
 
 void Client::setMessage(std::string message) { _message = message; }
 
@@ -90,7 +91,11 @@ void Client::sendMessage()
     if (msg.empty())
         return;
     msg += "\r\n";
-    send(this->getFd(), msg.c_str(), msg.length(), 0);
+    if (send(this->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
+    {
+        if (errno != EAGAIN && errno != EWOULDBLOCK)
+            std::cout << "Error: send" << std::endl;
+    }
     this->setMessage("");
 }
 
