@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 09:01:02 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 10:14:23 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel
     if (flag == 1)
     {
         (*it)->setMode((*it)->getMode() + c);
-        if (c == 'k')
         client->setMessage(RPL_CHANNELMODEIS(client->getNickname(), args, (*it)->getMode(), ' '));
         client->sendMessage();
     }
@@ -406,6 +405,16 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     {
                         if (flag == 1 && (*it)->CheckClientIsOperator(client->getNickname()))
                         {
+                            if (args.size() == 2)
+                            {
+                                client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<nickname>"));
+                                return;
+                            }
+                            if (check_if_user_is_in_channel(client, args.at(2), channels) == false)
+                            {
+                                client->reply(ERR_NOSUCHNICK(client->getNickname(), args.at(2)));
+                                return;
+                            }
                             (*it)->AddChannelOperator((*it)->getClient(args.at(2)));
                             client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "+o " + args.at(2)));
                         }
@@ -420,16 +429,28 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         if (args.size() == 2 && flag == 1)
                         {
                             client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit>"));
-                            if (!args.at(1).at(i + 1))
+                            if (!args.at(1)[i + 1])
                                 return;
                             continue;
                             // i++;
                             // goto label;
                         }
                         if (flag == 1 && (*it)->getMode().find('l') == std::string::npos)
+                        {
+                            if (std::stoi(args.at(2)) <= 0 || std::stoi(args.at(2)) < (int)(*it)->getClients().size())
+                            {
+                                client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
+                                return;
+                            }
+                            (*it)->setChannelLimit(std::stoi(args.at(2)));
+                            (*it)->setChannelLimit(std::stoi(args.at(2)));
                             SetModeAndSandMessage(client, args.at(0), it, 'l', 1);
+                        }
                         else if (flag == 2 && (*it)->getMode().find('l') != std::string::npos)
+                        {
+                            (*it)->setChannelLimit(100);
                             SetModeAndSandMessage(client, args.at(0), it, 'l', 2);
+                        }    
                     }
                     else
                         client->reply(ERR_UNKNOWNMODE(client->getNickname(), args.at(1).at(i)));
@@ -543,6 +564,8 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         else if (exist_channel->getMode().find('l') != std::string::npos)
         {
+            std::cout << "exist_channel->getClients().size() = " << exist_channel->getClients().size() << std::endl;
+            std::cout << "exist_channel->getChannelLimit() = " << exist_channel->getChannelLimit() << std::endl;
             if (exist_channel->getClients().size() >= (size_t)exist_channel->getUserLimit())
             {
                 client->reply(ERR_CHANNELISFULL(client->getNickname(), *it));
@@ -954,7 +977,7 @@ void Command::ping(Client *client, std::vector<std::string> args, Server *server
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "PING"));
         return;
     }
-    else if (!args.at(0).at(0))
+    else if (!args[0][0])
     {
         client->reply(ERR_NOORIGIN(client->getNickname()));
         return;

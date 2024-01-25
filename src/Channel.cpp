@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/24 15:42:02 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 10:21:33 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,8 +202,11 @@ void Channel::setTopicTime(std::string topicTime)
 
 bool Channel::CheckClientIsOperator(std::string nickname)
 {
+    std::cout << "hhhhjh" << std::endl;
+    std::cout << "sizeeeeee ::: " << this->_operator.size() << std::endl;
     for (size_t i = 0; i < this->_operator.size(); i++)
     {
+        std::cout << "llllllllllll" << std::endl;
         if (this->_operator.at(i)->getNickname() == nickname)
             return (true);
     }
