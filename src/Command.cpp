@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 11:08:03 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 12:02:06 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,7 +350,6 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                 int flag = 1;
                 for (int i = 0; args[1][i] ; i++)
                 {
-                    std::cout << "here\n";
                     if (args.at(1).at(i) == '+')
                         flag = 1;
                     else if (args.at(1).at(i) == '-')
@@ -492,7 +491,7 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
             valid_channel_name = false;
         if (!valid_channel_name)
         {
-            client->reply(ERR_BADCHANMASK(client->getNickname(), *it));
+            client->reply(ERR_BADCHANMASK(*it));
             continue;
         }
         if (check_if_user_is_in_channel(client, *it, channels))
@@ -549,9 +548,10 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         if (exist_channel->getMode().find('i') != std::string::npos)
         {
-            std::cout << "isinvited : "<< client->getIsInvited() << "\n";
             if (client->getIsInvited())
             {
+                if (exist_channel->getMode().find('k') != std::string::npos)
+                    goto label;
                 exist_channel->addClient(client);
                 client->reply(RPL_TOPIC(client->getNickname(), *it, exist_channel->getTopic()));
                 client->reply(RPL_TOPICWHOTIME(client->getNickname(), *it, exist_channel->getTopic(), exist_channel->getTopicTime()));
@@ -566,6 +566,7 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         else if (exist_channel->getMode().find('k') != std::string::npos)
         {
+            label:
             if (keys.at(n) != exist_channel->getChannelKey())
             {
                 client->reply(ERR_BADCHANNELKEY(client->getNickname(), *it));
@@ -629,12 +630,11 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
                 if (msg != "")
                     client->reply(msg);
                 server->sendToAllClientsInChannel(PART_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg), *it2, client);
-                goto label;
+                break;
             }
             else if ((*it2) == channels.back() && (*it2)->getName() != *it)
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), *it));
         }
-        label:;
     }
 }
 

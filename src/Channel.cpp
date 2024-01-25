@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 10:21:33 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 12:01:57 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ void Channel::removeClient(Client *client)
     {
         if (this->_clients.at(i) == client)
         {
+            client->setIsInvited(false);
             this->_clients.erase(this->_clients.begin() + i);
             return;
         }
@@ -202,11 +203,8 @@ void Channel::setTopicTime(std::string topicTime)
 
 bool Channel::CheckClientIsOperator(std::string nickname)
 {
-    std::cout << "hhhhjh" << std::endl;
-    std::cout << "sizeeeeee ::: " << this->_operator.size() << std::endl;
     for (size_t i = 0; i < this->_operator.size(); i++)
     {
-        std::cout << "llllllllllll" << std::endl;
         if (this->_operator.at(i)->getNickname() == nickname)
             return (true);
     }
