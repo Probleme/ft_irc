@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/24 15:55:40 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 09:01:02 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,11 +48,7 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
     }
     if (args.size() > 0 && args.at(0).at(0) == ':')
         args.at(0).erase(args.at(0).begin());
-    std::cout << "command: " << command << std::endl;
-    for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++)
-        std::cout << "args: " << *it << std::endl;
     (this->*_commands[command])(client, args, server);
-    std::cout << "444" << std::endl;
 }
 
 bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::vector<Channel *> channels)
@@ -77,6 +73,7 @@ void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel
     if (flag == 1)
     {
         (*it)->setMode((*it)->getMode() + c);
+        if (c == 'k')
         client->setMessage(RPL_CHANNELMODEIS(client->getNickname(), args, (*it)->getMode(), ' '));
         client->sendMessage();
     }
@@ -353,8 +350,9 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     return;
                 }
                 int flag = 1;
-                for (int i = 0; args.at(1).at(i)  ; i++)
+                for (int i = 0; args[1][i] ; i++)
                 {
+                    std::cout << "here\n";
                     if (args.at(1).at(i) == '+')
                         flag = 1;
                     else if (args.at(1).at(i) == '-')
@@ -383,23 +381,24 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     }
                     else if (args.at(1).at(i) == 'k')
                     {
-                        if (args.size() == 2)
+                        if (args.size() == 2 && flag == 1)
                         {
                             client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<key>"));
-                            if (!args.at(1).at(i + 1))
+                            if (!args.at(1)[i + 1])
                                 return;
                             continue;
                             // i++;
                             // goto label;
                         }
                         else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos)
+                        {
                             SetModeAndSandMessage(client, args.at(0), it, 'k', 1);
+                            (*it)->setChannelKey(args.at(2));
+                        }
                         else if (flag == 2 && (*it)->getMode().find('k') != std::string::npos)
                         {
-                            if (args.at(2) != (*it)->getChannelKey() || args.at(2) == "")
-                                client->reply(ERR_BADCHANNELKEY(client->getNickname(), args.at(0)));
-                            else
-                                SetModeAndSandMessage(client, args.at(0), it, 'k', 2);
+                            SetModeAndSandMessage(client, args.at(0), it, 'k', 2);
+                            (*it)->setChannelKey("");
                             return;
                         }
                     }
