@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 14:44:47 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:02:24 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -647,7 +647,6 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
             else if ((*it2) == channels.back() && (*it2)->getName() != *it)
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), *it));
         }
-        label:;
     }
 }
 
@@ -673,10 +672,13 @@ void Command::names(Client *client, std::vector<std::string> args, Server *serve
                 {
                     client->reply(RPL_NAMREPLY(client->getNickname(), *it, (*it3)->getNickname()));
                 }
+                client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
+                break;
             }
             else if ((*it2) == serverChannels.back() && (*it2)->getName() != *it)
             {
-                client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
+                client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), *it));
+                break;
             }
         }
     }
