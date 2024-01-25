@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 12:56:17 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 14:44:47 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,15 +84,16 @@ void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel
     }
 }
 
-void SearchUserInChannel(Client *client, Channel *channel)
+bool SearchUserInChannel(Client *client, Channel *channel)
 {
     std::vector<Client *> clients = channel->getClients();
     for (std::vector<Client *>::iterator it = clients.begin(); it != clients.end(); it++)
     {
         if ((*it)->getUsername() == client->getUsername())
-            return;
+            return true;
     }
     client->reply(ERR_NOTONCHANNEL(client->getNickname(), channel->getName()));
+    return false;
 }
 
 void Command::pass(Client *client, std::vector<std::string> args, Server *server)
@@ -272,7 +273,8 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
     {
         if ((*it)->getName() == args.at(0))
         {
-            SearchUserInChannel(client, *it);
+            if (!SearchUserInChannel(client, *it))
+                return;
             if (args.size() == 1)
             {
                 if ((*it)->getTopic() == "")
@@ -292,13 +294,18 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
             }
             else
             {
-                if (!server->checkClientPrivilege(client, *it))
+                if (!server->checkClientPrivilege(client, *it) && (*it)->getMode().find('t') != std::string::npos)
                 {
                     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
                     return;
                 }
                 if (args.at(1) == ":")
                 {
+                    // if ((*it)->getMode().find('t') != std::string::npos)
+                    // {
+                    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
+                    //     return;
+                    // }
                     (*it)->setTopic("");
                     (*it)->setTopicTime(server->getStartTime());
                     client->reply(RPL_TOPIC(client->getNickname(), args.at(0), (*it)->getTopic()));
@@ -344,7 +351,8 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
                     return;
                 }
-                SearchUserInChannel(client, *it);
+                if (!SearchUserInChannel(client, *it))
+                    continue;
                 if (args.size() == 1)
                 {
                     client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), ' '));
@@ -627,7 +635,8 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
         {
             if ((*it2)->getName() == *it)
             {
-                SearchUserInChannel(client, *it2);
+                if (!SearchUserInChannel(client, *it2))
+                    continue;
                 (*it2)->removeClient(client);
                 client->reply("left channel " + *it);
                 if (msg != "")
