@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 15:26:26 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 14:44:47 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,6 +301,11 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
                 }
                 if (args.at(1) == ":")
                 {
+                    // if ((*it)->getMode().find('t') != std::string::npos)
+                    // {
+                    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
+                    //     return;
+                    // }
                     (*it)->setTopic("");
                     (*it)->setTopicTime(server->getStartTime());
                     client->reply(RPL_TOPIC(client->getNickname(), args.at(0), (*it)->getTopic()));
@@ -473,7 +478,7 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
 
 void Command::join(Client *client, std::vector<std::string> args, Server *server)
 {
-   if (args.size() == 0)
+   if (args.size() == 0 || args.size() > 2)
    {
        client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), client->getCommand()));
        return;
@@ -674,6 +679,10 @@ void Command::names(Client *client, std::vector<std::string> args, Server *serve
             {
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), *it));
                 break;
+            }
+            else if ((*it2) == serverChannels.back() && (*it2)->getName() != *it)
+            {
+                client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
             }
         }
     }
