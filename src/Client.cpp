@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 13:54:43 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:00:51 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Client::Client(std::string& host, int port, int fd) : _hostname(host), _nickname("*"),_password(false), _port(port), _fd(fd), _isRegister(false)
 {
+    this->_isInvited = false;
     this->_time = time(0);
 }
 
@@ -113,4 +114,14 @@ void Client::setIsRegister(bool isRegister)
 bool Client::getIsRegister() const
 {
     return this->_isRegister;
+}
+
+void Client::setIsInvited(bool isInvited)
+{
+    this->_isInvited = isInvited;
+}
+
+bool Client::getIsInvited() const
+{
+    return this->_isInvited;
 }

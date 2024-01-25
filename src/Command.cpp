@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 10:14:23 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:08:03 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,32 +182,31 @@ void Command::invite(Client *client, std::vector<std::string> args, Server *serv
     }
     for (std::vector<Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
     {
-        std::vector<Client *> clients = (*it)->getClients();
-        for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
+        if (args.at(1) == (*it)->getName())
         {
-            if ((*it2)->getNickname() == args.at(0))
+            Client *clientInvited = server->getClientByNickname(args.at(0));
+            if (clientInvited == nullptr)
             {
-                client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+                client->reply(ERR_NOSUCHNICK(client->getNickname(), args.at(0)));
                 return;
             }
-        }
-        if ((*it)->getName() == args.at(1))
-        {
-            SearchUserInChannel(client, *it);
-            if ((*it)->getMode().find('i') != std::string::npos)
-            {
-                client->reply(ERR_INVITEONLYCHAN(client->getNickname(), args.at(1)));
-                return;
-            }
-            if ((*it)->CheckClientIsOperator(client->getNickname()))
+            if ((*it)->CheckClientIsOperator(client->getNickname()) == false)
             {
                 client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(1)));
                 return;
             }
+            if (check_if_user_is_in_channel(clientInvited, args.at(1), channels))
+            {
+                client->reply(ERR_USERONCHANNEL(client->getNickname(), args.at(0), args.at(1)));
+                return;
+            }
             client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+            clientInvited->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+            clientInvited->setIsInvited(true);
             return;
         }
     }
+    client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), args.at(1)));
 }
 
 void Command::kick(Client *client, std::vector<std::string> args, Server *server)
@@ -493,7 +492,7 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
             valid_channel_name = false;
         if (!valid_channel_name)
         {
-            client->reply(ERR_BADCHANNELKEY(client->getNickname(), *it));
+            client->reply(ERR_BADCHANMASK(client->getNickname(), *it));
             continue;
         }
         if (check_if_user_is_in_channel(client, *it, channels))
@@ -550,6 +549,18 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         if (exist_channel->getMode().find('i') != std::string::npos)
         {
+            std::cout << "isinvited : "<< client->getIsInvited() << "\n";
+            if (client->getIsInvited())
+            {
+                exist_channel->addClient(client);
+                client->reply(RPL_TOPIC(client->getNickname(), *it, exist_channel->getTopic()));
+                client->reply(RPL_TOPICWHOTIME(client->getNickname(), *it, exist_channel->getTopic(), exist_channel->getTopicTime()));
+                client->reply(RPL_NAMREPLY(client->getNickname(), *it, client->getNickname()));
+                client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
+                server->sendToAllClientsInChannel(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()), exist_channel,client);
+                client->reply(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()));
+                continue;
+            }
             client->reply(ERR_INVITEONLYCHAN(client->getNickname(), *it));
             continue;
         }
@@ -564,8 +575,6 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         else if (exist_channel->getMode().find('l') != std::string::npos)
         {
-            std::cout << "exist_channel->getClients().size() = " << exist_channel->getClients().size() << std::endl;
-            std::cout << "exist_channel->getChannelLimit() = " << exist_channel->getChannelLimit() << std::endl;
             if (exist_channel->getClients().size() >= (size_t)exist_channel->getUserLimit())
             {
                 client->reply(ERR_CHANNELISFULL(client->getNickname(), *it));

@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/24 15:40:01 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 10:52:35 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,3 +95,34 @@ class Server
 
 
 # endif
+
+
+/*
+     std::vector<Client *> clients = (*it)->getClients();
+            for (std::vector<Client *>::iterator it2 = clients.begin(); it2 != clients.end(); it2++)
+            {
+                std::cout << "nickname: " << (*it2)->getNickname() << "\n";
+                std::cout << "args.at(0): " << args.at(0) << "\n";
+                if ((*it2)->getNickname() == args.at(0))
+                {
+                    client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+                    return;
+                }
+            }
+            if ((*it)->getName() == args.at(1))
+            {
+                SearchUserInChannel(client, *it);
+                if ((*it)->getMode().find('i') != std::string::npos)
+                {
+                    client->reply(ERR_INVITEONLYCHAN(client->getNickname(), args.at(1)));
+                    return;
+                }
+                if ((*it)->CheckClientIsOperator(client->getNickname()))
+                {
+                    client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(1)));
+                    return;
+                }
+                client->reply(RPL_INVITING(client->getNickname(), args.at(0), args.at(1)));
+                return;
+            }
+*/

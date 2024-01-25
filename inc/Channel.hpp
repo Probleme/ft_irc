@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 12:17:01 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 18:42:54 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 10:51:12 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,68 +89,3 @@ class Channel
 };
 
 #endif
-
-
-
-
-/*
-
-NICk test
-:irc.1337.ma 421 * NICk :Unknown command
-NICK test
-:irc.1337.ma 451 * :You have not registered
-USER ataouaf test test test
-:irc.1337.ma 451 * :You have not registered
-PASS password
-NICK test
-:*!~@10.11.13.1 NICK :test
-USER atapuad test est test test
-:irc.1337.ma 001 test :Welcome to the IRC Network, test
-:irc.1337.ma 002 test :Your host is Problem_irc, running version 1.0.0
-:irc.1337.ma 003 test :This server was created Sun Jan 21 18:34:42 2024
-:irc.1337.ma 004 test :Problem_irc 1.0.0
-:irc.1337.ma 005 test :are supported by this server
-NICk test
-:irc.1337.ma 421 * NICk :Unknown command
-NICK test
-:irc.1337.ma 451 * :You have not registered
-USER ataouaf test test test
-:irc.1337.ma 451 * :You have not registered
-PASS password
-NICK test
-:*!~@10.11.13.1 NICK :test
-USER atapuad test est test test
-:irc.1337.ma 001 test :Welcome to the IRC Network, test
-:irc.1337.ma 002 test :Your host is Problem_irc, running version 1.0.0
-:irc.1337.ma 003 test :This server was created Sun Jan 21 18:34:42 2024
-:irc.1337.ma 004 test :Problem_irc 1.0.0
-:irc.1337.ma 005 test :are supported by this server
-JOIN #chan1,#chan2,#chan3
-:irc.1337.ma 461 test JOIN :Not enough parameters
-JOIN #chan1,#chan2,#chan3 pass1
-:irc.1337.ma 331 test #chan1 :No topic is set
-:irc.1337.ma 353 test = #chan1 :test
-:irc.1337.ma 366 test = #chan1 :End of /NAMES list
-:test!~atapuad@10.11.13.1 JOIN #chan1
-:irc.1337.ma 331 test #chan2 :No topic is set
-:irc.1337.ma 353 test = #chan2 :test
-:irc.1337.ma 366 test = #chan2 :End of /NAMES list
-:irc.1337.ma 331 test #chan3 :No topic is set
-:irc.1337.ma 353 test = #chan3 :test
-:irc.1337.ma 366 test = #chan3 :End of /NAMES list
-:irc.1337.ma 421 test Ip�JOIN :Unknown command
-:irc.1337.ma 461 test JOIN :Not enough parameters
-JOIN #chan1,#chan2,#chan3 pass1
-:irc.1337.ma 331 test #chan1 :No topic is set
-:irc.1337.ma 353 test = #chan1 :test
-:irc.1337.ma 366 test = #chan1 :End of /NAMES list
-:test!~atapuad@10.11.13.1 JOIN #chan1
-:irc.1337.ma 331 test #chan2 :No topic is set
-:irc.1337.ma 353 test = #chan2 :test
-:irc.1337.ma 366 test = #chan2 :End of /NAMES list
-:irc.1337.ma 331 test #chan3 :No topic is set
-:irc.1337.ma 353 test = #chan3 :test
-:irc.1337.ma 366 test = #chan3 :End of /NAMES list
-:irc.1337.ma 421 test Ip�JOIN :Unknown command
-
-*/
