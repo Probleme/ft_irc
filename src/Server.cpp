@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 12:59:58 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:49:09 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,12 @@ void Server::run()
         return;
     }
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        std::cerr << "setsockopt failed" << std::endl;
+        close(_socket);
+        return;
+    }
+    if (setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
         close(_socket);
@@ -130,7 +136,7 @@ void Server::acceptNewConnection()
     int socket = accept(_socket, (struct sockaddr *)&_client_address, &address_len);
     if (socket < 0)
     {
-        if (errno != EWOULDBLOCK)
+        if (errno != EWOULDBLOCK && errno != EAGAIN)
             std::cerr << "Error: Failed to accept connection." << std::endl;
         close(socket);
         return;
@@ -138,7 +144,7 @@ void Server::acceptNewConnection()
     std::string ip = inet_ntoa(_client_address.sin_addr);
     int port = ntohs(_client_address.sin_port);
     this->_users.push_back(new Client(ip, port, socket));
-    if (fcntl(_socket, F_SETFL, O_NONBLOCK) < 0)
+    if (fcntl(socket, F_SETFL, O_NONBLOCK) < 0)
     {
         std::cerr << "fcntl failed" << std::endl;
         close(_socket);
@@ -152,10 +158,10 @@ void Server::readFromClient(int i)
 {
     Client *client = _users[i - 1];
     char buffer[BUFFER_SIZE + 1];
-    int ret = recv(client->getFd(), buffer, sizeof(buffer), 0);
+    int ret = recv(client->getFd(), buffer, sizeof(buffer), MSG_DONTWAIT);
     if (ret < 0)
     {
-        if (errno != EWOULDBLOCK)
+        if (errno != EWOULDBLOCK && errno != EAGAIN)
         {
             std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
             this->removeClient(client->getFd()); // remove the client from the list
