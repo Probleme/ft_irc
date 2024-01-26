@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 12:01:46 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/26 17:42:02 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ class Server
         std::vector<Channel *> _channels; // channels is a list of channels
         std::vector<Client *> _users;
     public:
+        int flag;
         Server();
         Server(std::string password, int port);
         ~Server();
@@ -75,7 +76,7 @@ class Server
         void acceptNewConnection();
         void addNewClient(int fd, std::string ip, int port);
         void readFromClient(int i);
-        void removeClient(int fd);
+        void removeClient(int fd, Server *server);
         void handleCommands(Client *client, std::string &command);
         std::vector<Client *> getUsers() const;
         std::vector<Channel *> getChannels() const;

@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 22:07:29 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/26 17:42:54 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ Server::Server()
 
 Server::Server(std::string password ,int port) : _server_name("Problem_irc"),_password(password), _start_time(dateString()), _port(port),  _socket(0), _fds()
 {
+    this->flag = 0;
 }
 Server::~Server() {
     for (size_t i = 0; i < this->_users.size(); i++)
@@ -63,19 +64,16 @@ void Server::run()
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     if (setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     if (fcntl(_socket, F_SETFL, O_NONBLOCK) < 0)
     {
         std::cerr << "fcntl failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     _client_address.sin_family = AF_INET;
@@ -84,13 +82,11 @@ void Server::run()
     if (bind(_socket, (struct sockaddr *)&_client_address, sizeof(_client_address)) < 0)
     {
         std::cerr << "bind failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     if (listen(_socket, 500) < 0)
     {
         std::cerr << "listen failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     std::cout << "Server is listening on port " << _port << " and waiting for connections..." << std::endl;
@@ -137,9 +133,10 @@ void Server::acceptNewConnection()
     if (socket < 0)
     {
         if (errno != EWOULDBLOCK && errno != EAGAIN)
+        {
             std::cerr << "Error: Failed to accept connection." << std::endl;
-        close(socket);
-        exit (EXIT_FAILURE);
+            exit (EXIT_FAILURE);
+        }
     }
     std::string ip = inet_ntoa(_client_address.sin_addr);
     int port = ntohs(_client_address.sin_port);
@@ -148,13 +145,11 @@ void Server::acceptNewConnection()
     if (setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     if (fcntl(socket, F_SETFL, O_NONBLOCK) < 0)
     {
         std::cerr << "fcntl failed" << std::endl;
-        close(_socket);
         exit (EXIT_FAILURE);
     }
     this->setDescriptors();
@@ -171,7 +166,7 @@ void Server::readFromClient(int i)
         if (errno != EWOULDBLOCK && errno != EAGAIN)
         {
             std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
-            this->removeClient(client->getFd()); // remove the client from the list
+            this->removeClient(client->getFd(), this); // remove the client from the list
             this->setDescriptors(); // rebuild the pollfd array
         }
         return;
@@ -179,7 +174,7 @@ void Server::readFromClient(int i)
     else if (!ret)
     {
         std::cout << "Client " << client->getNickname() << " disconnected." << std::endl;
-        this->removeClient(client->getFd());
+        this->removeClient(client->getFd(), this);
         this->setDescriptors();
         return;
     }
@@ -204,7 +199,7 @@ void Server::readFromClient(int i)
     }
 }
 
-void Server::removeClient(int fd)
+void Server::removeClient(int fd, Server *server)
 {
     for (size_t i = 0; i < this->_channels.size(); i++)
     {
@@ -221,7 +216,7 @@ void Server::removeClient(int fd)
                         break;
                     }
                 }
-                this->_channels.at(i)->removeClient(this->_channels.at(i)->getClients().at(j));
+                this->_channels.at(i)->removeClient(this->_channels.at(i)->getClients().at(j), server);
                 break;
             }
         }
@@ -339,7 +334,7 @@ void Server::addClientToChannel(Client *client, Channel *channel)
 
 void Server::removeClientFromChannel(Client *client, Channel *channel)
 {
-    channel->removeClient(client);
+    channel->removeClient(client, this);
 }
 
 // void Server::sendMessageToChannel(Client *client, Channel *channel, std::string message)

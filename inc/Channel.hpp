@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 12:17:01 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 10:51:12 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/26 17:40:32 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ class Channel
         std::vector<Client *> getClients();
         std::vector<Client *> getChannelOperators() const;
         void addClient(Client *client);
-        void removeClient(Client *client);
+        void removeClient(Client *client, Server *server);
         time_t getChannelCreationTime() const;
         void setChannelCreationTime(time_t time);
         void setMode(std::string mode);
@@ -86,6 +86,7 @@ class Channel
         bool CheckClientIsOperator(std::string nickname);
         Client *getClient(std::string nickname);
         void replyToAllUsersInChannel(std::string message, Client *client);
+        std::string getChannelUsersList(Channel *channel);
 };
 
 #endif

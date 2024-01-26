@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 15:38:09 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/26 17:39:55 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ void Channel::addClient(Client *client)
     this->_clients.push_back(client);
 }
 
-void Channel::removeClient(Client *client)
+void Channel::removeClient(Client *client, Server *server)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
@@ -80,6 +80,9 @@ void Channel::removeClient(Client *client)
                     
                     std::cout << "the new operator is : " << this->_clients.at(0)->getNickname() << std::endl;
                     this->_operator.push_back(this->_clients.at(0));
+                    // client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, "+o ", this->_clients.at(0)->getNickname()));
+                    // client->reply(RPL_NAMREPLY(client->getNickname(), this->_name, this->getChannelUsersList(this)));
+                    server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, "+o ", this->_clients.at(0)->getNickname()), this, client);
                     }
                     return;
                 }
@@ -248,3 +251,18 @@ void Channel::replyToAllUsersInChannel(std::string message, Client *client)
         }
     }
 }
+
+std::string Channel::getChannelUsersList(Channel *channel)
+{
+    std::string users;
+    std::vector<Client *> clients = channel->getClients();
+    for (std::vector<Client *>::iterator it = clients.begin(); it != clients.end(); it++)
+    {
+        if (channel->CheckClientIsOperator((*it)->getNickname()))
+            users += "@" + (*it)->getNickname() + " ";
+        else
+            users += (*it)->getNickname() + " ";
+    }
+    return users;
+}
+

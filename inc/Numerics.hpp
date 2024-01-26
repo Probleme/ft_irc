@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:03:06 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 05:52:58 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/26 16:44:11 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@
 #define ERROR_MSG(reason) ":irc.1337.ma " + (reason)
 #define ERR_NOTREGISTERED(client) ":irc.1337.ma 451 " + (client) + " :You have not registered"
 #define RPL_ENDOFWHO(client) ":irc.1337.ma 315 " + (client) + " :End of /WHO list"
-#define JOIN_SUCC(nickname, username, client_ip, channel) ":" + (nickname) + "!~" + (username) + "@" + (client_ip) + " JOIN " + (channel)
 
 #define RPL_NICK(client, username,ipaddr, newnick)  ":" + (client) + "!~" + (username) + "@"+ (ipaddr) + " NICK :"+(newnick)
 #define KICK_MSG(client, ipaddr, channel, kicked, reason) ":" + (client) + "!~" + (ipaddr) + " KICK " + (channel) + " " + kicked + " " + reason
