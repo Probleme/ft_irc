@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 17:43:27 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/26 18:23:53 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,10 +69,7 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
     if (command == "JOIN" && server->flag == 0)
         server->flag = 1;
     if (command == "MODE" && server->flag == 1)
-    {
-        server->flag = 0;
         return ;
-    }
     if ((command != "JOIN" && command != "join") && server->flag == 1)
         server->flag = 0;
     std::cout<< ":commanddd " << command << std::endl;
@@ -826,7 +823,7 @@ void Command::list(Client *client, std::vector<std::string> args, Server *server
 
 void Command::privmsg(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 1 || args[0].empty() || args[1].empty())
+    if (args.size() < 2)
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), client->getCommand()));
         return;
@@ -902,7 +899,7 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
 
 void Command::notice(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 1 || args[0].empty() || args[1].empty())
+    if (args.size() < 2)
         return;
     std::string target = args.at(0);
     std::string msg;
