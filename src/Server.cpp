@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 15:49:09 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/26 09:25:33 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,25 +58,25 @@ void Server::run()
     if ((_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         std::cerr << "socket failed" << std::endl;
-        return;
+        exit (EXIT_FAILURE);
     }
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     if (setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
     {
         std::cerr << "setsockopt failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     if (fcntl(_socket, F_SETFL, O_NONBLOCK) < 0)
     {
         std::cerr << "fcntl failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     _client_address.sin_family = AF_INET;
     _client_address.sin_port = htons(_port);
@@ -85,13 +85,13 @@ void Server::run()
     {
         std::cerr << "bind failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     if (listen(_socket, 500) < 0)
     {
         std::cerr << "listen failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     std::cout << "Server is listening on port " << _port << " and waiting for connections..." << std::endl;
     setDescriptors();
@@ -101,7 +101,7 @@ void Server::run()
         if (poll_count < 0)
         {
             std::cerr << "poll failed" << std::endl;
-            return;
+            exit (EXIT_FAILURE);
         }
         for (size_t i = 0; i < _users.size() + 1; i++)
         {
@@ -139,16 +139,23 @@ void Server::acceptNewConnection()
         if (errno != EWOULDBLOCK && errno != EAGAIN)
             std::cerr << "Error: Failed to accept connection." << std::endl;
         close(socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     std::string ip = inet_ntoa(_client_address.sin_addr);
     int port = ntohs(_client_address.sin_port);
     this->_users.push_back(new Client(ip, port, socket));
+    int opt = 1;
+    if (setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
+    {
+        std::cerr << "setsockopt failed" << std::endl;
+        close(_socket);
+        exit (EXIT_FAILURE);
+    }
     if (fcntl(socket, F_SETFL, O_NONBLOCK) < 0)
     {
         std::cerr << "fcntl failed" << std::endl;
         close(_socket);
-        return;
+        exit (EXIT_FAILURE);
     }
     this->setDescriptors();
     std::cout << "New connection from " << ip << ":" << port << std::endl;
@@ -158,7 +165,7 @@ void Server::readFromClient(int i)
 {
     Client *client = _users[i - 1];
     char buffer[BUFFER_SIZE + 1];
-    int ret = recv(client->getFd(), buffer, sizeof(buffer), MSG_DONTWAIT);
+    ssize_t ret = recv(client->getFd(), buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
     if (ret < 0)
     {
         if (errno != EWOULDBLOCK && errno != EAGAIN)
@@ -234,8 +241,8 @@ void Server::removeClient(int fd)
 
 bool chekIfCommandValide(std::string command)
 {
-    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "NAMES", "PASS"};
-    for (size_t i = 0; i < 17; i++)
+    std::string command_list[] = {"NICK", "USER", "KICK", "INVITE", "TOPIC", "MODE", "JOIN", "PART", "PRIVMSG", "QUIT", "LIST", "WHO", "PING", "PONG", "NOTICE", "NAMES", "PASS", "nick", "user", "kick", "invite", "topic", "mode", "join", "part", "privmsg", "quit", "list", "who", "ping", "pong", "notice", "names", "pass"};
+    for (size_t i = 0; i < 34; i++)
     {
         if (command == command_list[i])
             return (true);
@@ -265,20 +272,20 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
             args.push_back(buf);
-        if (!client->isRegistered() && name != "PASS")
+        if (!client->isRegistered() && name != "PASS" && name != "pass")
         {
             client->reply(ERR_NOTREGISTERED(client->getNickname()));
             return;
         }
-        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS")
+        if (client->isRegistered() && client->getUsername() == "" && client->getRealname() == "" && client->getNickname() == "*" && name != "USER" && name != "NICK" && name != "PASS" && name != "pass" && name != "user" && name != "nick")
         {
             client->reply(ERR_NOTREGISTERED(client->getNickname()));
             return;
         }
         command.execute(client, args, name, this);
-        if (name == "QUIT")
+        if (name == "QUIT" || name == "quit")
             return;
-        if (!client->getIsRegister() && client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK"))
+        if (!client->getIsRegister() && client->getNickname() != "*" && client->getUsername() != "" && client->getRealname() != "" && (name == "USER" || name == "NICK" || name == "user" || name == "nick"))
         {
             client->setIsRegister(true);
             client->reply(RPL_WELCOME(client->getNickname()));
