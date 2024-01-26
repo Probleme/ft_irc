@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 15:26:26 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/26 05:48:09 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,24 @@ Command::Command()
     _commands["NAMES"] = &Command::names;
     _commands["PING"] = &Command::ping;
     _commands["PONG"] = &Command::pong;
+    _commands["pass"] = &Command::pass;
+    _commands["nick"] = &Command::nick;
+    _commands["user"] = &Command::user;
+    _commands["kick"] = &Command::kick;
+    _commands["invite"] = &Command::invite;
+    _commands["topic"] = &Command::topic;
+    _commands["mode"] = &Command::mode;
+    _commands["join"] = &Command::join;
+    _commands["part"] = &Command::part;
+    _commands["privmsg"] = &Command::privmsg;
+    _commands["quit"] = &Command::quit;
+    _commands["list"] = &Command::list;
+    _commands["who"] = &Command::who;
+    _commands["notice"] = &Command::notice;
+    _commands["names"] = &Command::names;
+    _commands["ping"] = &Command::ping;
+    _commands["pong"] = &Command::pong;
+    
 }
 
 void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
@@ -105,10 +123,7 @@ void Command::pass(Client *client, std::vector<std::string> args, Server *server
     else if (client->getPassword() == true)
         client->reply(ERR_ALREADYREGISTERED(client->getNickname()));
     else if (args.at(0) == server->getPassword() && client->getPassword() == false)
-    {
         client->setPassword(true);
-        client->reply("Password accepted you have registered");
-    }
 }
 
 void Command::nick(Client *client, std::vector<std::string> args, Server *server)
@@ -258,7 +273,7 @@ void Command::kick(Client *client, std::vector<std::string> args, Server *server
 
 void Command::topic(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 2)
+    if (args.size() < 1) // changeed
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
         return;
@@ -308,9 +323,9 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
                     // }
                     (*it)->setTopic("");
                     (*it)->setTopicTime(server->getStartTime());
-                    client->reply(RPL_TOPIC(client->getNickname(), args.at(0), (*it)->getTopic()));
+                    client->reply(RPL_NOTOPIC(client->getNickname(), args.at(0)));
                     client->reply(RPL_TOPICWHOTIME(client->getUsername(), args.at(0), client->getNickname(), (*it)->getTopicTime()));
-                    server->sendToAllClientsInChannel(TOPIC_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), (*it)->getTopic()), *it, client);
+                    server->sendToAllClientsInChannel(TOPIC_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0)," :No topic is set"), *it, client);
                 }
                 else if (args.at(1) != "" && args.at(1).at(0) != ':')
                 {
@@ -318,7 +333,7 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
                     std::string channelName = args.at(0);
                     args.erase(args.begin());
                     for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++)
-                        topic += *it + " ";
+                        topic.append(*it + " ");
                     (*it)->setTopic(topic);
                     (*it)->setTopicTime(server->getStartTime());
                     client->reply(RPL_TOPIC(client->getNickname(), (*it)->getName(), (*it)->getTopic()));
@@ -525,12 +540,14 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
             {
                 new_channel->setMode(new_channel->getMode() + "k");
                 new_channel->setChannelKey(keys.at(n));
+                client->reply(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), *it));
                 client->reply(RPL_NOTOPIC(client->getNickname(), *it));
                 client->reply(RPL_NAMREPLY(client->getNickname(), *it, client->getNickname()));
                 client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
             }
             else if (keys.at(n).size() == 0)
             {
+                client->reply(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), *it));
                 client->reply(RPL_NOTOPIC(client->getNickname(), *it));
                 client->reply(RPL_NAMREPLY(client->getNickname(), *it, client->getNickname()));
                 client->reply(RPL_ENDOFNAMES(client->getNickname(), *it));
@@ -617,16 +634,15 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
 
 void Command::part(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 1 || args.size() > 2)
+    if (args.empty())
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "PART"));
         return;
     }
     std::string msg;
-    if (args.size() == 2)
-        msg = args.at(1);
-    else
-        msg = "";
+    if (args.size() >= 1)
+        for (std::vector<std::string>::iterator it = args.begin() + 1; it != args.end(); it++)
+            msg.append(*it + " ");
     std::vector<std::string> channelsToPart = client->split(args.at(0), ',');
     for (std::vector<std::string>::iterator it = channelsToPart.begin(); it != channelsToPart.end(); it++)
     {
@@ -795,7 +811,7 @@ void Command::list(Client *client, std::vector<std::string> args, Server *server
 
 void Command::privmsg(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 2)
+    if (args.size() < 1 || args[0].empty() || args[1].empty())
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), client->getCommand()));
         return;
@@ -803,7 +819,7 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
     std::string target = args.at(0);
     std::string msg;
     for (std::vector<std::string>::iterator it = args.begin() + 1; it != args.end(); it++)
-        msg += *it + " ";
+        msg.append(*it + " ");
     if (msg.empty())
     {
         client->reply(ERR_NOTEXTTOSEND(client->getNickname()));
@@ -814,15 +830,14 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
         client->reply(ERR_NORECIPIENT(client->getNickname(), client->getCommand()));
         return;
     }
+    msg = msg.at(0) == ':' ? msg.substr(1) : msg;
     std::vector<std::string> targets = client->split(target, ',');
     for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
     {
         if (it->find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890[]{}\\|") != std::string::npos ||
                 it->empty() || it->find_first_of("0123456789") == 0)
-        {
             client->reply(ERR_NOSUCHNICK(client->getNickname(), *it));
             continue;
-        }
         if (it->find_first_of("#") == 0)
         {
             std::vector<Channel *> channels = server->getChannels();
@@ -837,7 +852,7 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
                     {
                         if ((*it3)->getNickname() == client->getNickname())
                             continue;
-                        (*it3)->reply(PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg));
+                        (*it3)->reply(PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), (*it2)->getName(), msg));
                     }
                     break;
                 }
@@ -849,14 +864,14 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
             }
             continue;
         }
-        int idx = 0;
         std::vector<Client *> users = server->getUsers();
         for (std::vector<Client *>::iterator it2 = users.begin(); it2 != users.end(); it2++)
         {
             if ((*it2)->getNickname() == *it)
             {
-                (*it2)->reply(PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg));
-                idx++;
+                if ((*it2)->getNickname() == client->getNickname())
+                    continue;
+                (*it2)->reply(PRIVMSG(client->getNickname(), client->getUsername(), client->getHostname(), (*it2)->getNickname(), msg));
                 break;
             }
             else if ((*it2) == users.back() && (*it2)->getNickname() != *it)
@@ -870,30 +885,20 @@ void Command::privmsg(Client *client, std::vector<std::string> args, Server *ser
 
 void Command::notice(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 2)
-    {
+    if (args.size() < 1 || args[0].empty() || args[1].empty())
         return;
-    }
     std::string target = args.at(0);
     std::string msg;
     for (std::vector<std::string>::iterator it = args.begin() + 1; it != args.end(); it++)
-        msg += *it + " ";
-    if (msg.empty())
-    {
+        msg.append(*it + " ");
+    if (msg.empty() || target.empty())
         return;
-    }
-    if (target.empty())
-    {
-        return;
-    }
     std::vector<std::string> targets = client->split(target, ',');
     for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); it++)
     {
         if (it->find_first_not_of("#abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890[]{}\\|") != std::string::npos ||
                 it->empty() || it->find_first_of("0123456789") == 0)
-        {
             continue;
-        }
         if (it->find_first_of("#") == 0)
         {
             std::vector<Channel *> channels = server->getChannels();
@@ -911,26 +916,22 @@ void Command::notice(Client *client, std::vector<std::string> args, Server *serv
                     break;
                 }
                 else if ((*it2) == channels.back() && (*it2)->getName() != *it)
-                {
                     break;
-                }
             }
             continue;
         }
-        int idx = 0;
         std::vector<Client *> users = server->getUsers();
         for (std::vector<Client *>::iterator it2 = users.begin(); it2 != users.end(); it2++)
         {
             if ((*it2)->getNickname() == *it)
             {
+                if ((*it2)->getNickname() == client->getNickname())
+                    continue;
                 (*it2)->reply(NOTICE(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg));
-                idx++;
                 break;
             }
             else if ((*it2) == users.back() && (*it2)->getNickname() != *it)
-            {
                 break;
-            }
         }
     }
 }
@@ -996,12 +997,7 @@ void Command::who(Client *client, std::vector<std::string> args, Server *server)
 void Command::ping(Client *client, std::vector<std::string> args, Server *server)
 {
     std::vector<Client *> users = server->getUsers();
-    if (args.size() != 1)
-    {
-        client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "PING"));
-        return;
-    }
-    else if (!args[0][0])
+    if (args.empty())
     {
         client->reply(ERR_NOORIGIN(client->getNickname()));
         return;
@@ -1014,28 +1010,21 @@ void Command::ping(Client *client, std::vector<std::string> args, Server *server
     for (std::vector<Client *> ::iterator it = users.begin(); it != users.end(); it++)
     {
         if ((*it)->getUsername() == args.at(0) || (*it)->getNickname() == args.at(0) || (*it)->getRealname() == args.at(0))
-        {
-            std::string msg = "PING " + args.at(0);
-            client->reply(msg);
-        }
+            (*it)->reply(PING(args.at(0)));
     }
 }
 void Command::pong(Client *client, std::vector<std::string> args, Server *server)
 {
     std::vector<Client *> users = server->getUsers();
-    if (args.size() != 1)
-        return;
-    if (args.at(0) == "Problem_irc")
+    if (args.empty())
     {
-        client->reply(PING(client->getNickname()));
+        client->reply(ERR_NOORIGIN(client->getNickname()));
         return;
     }
     for (std::vector<Client *> ::iterator it = users.begin(); it != users.end(); it++)
     {
         if ((*it)->getUsername() == args.at(0) || (*it)->getNickname() == args.at(0) || (*it)->getRealname() == args.at(0))
-        {
-            client->reply(PONG(client->getNickname(), args.at(0)));
-        }
+            (*it)->reply(PONG((*it)->getNickname(), args.at(0)));
     }
 }
 
