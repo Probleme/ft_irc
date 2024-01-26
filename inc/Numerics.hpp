@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Numerics.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:03:06 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/21 17:42:10 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/26 16:44:11 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@
 #define ERROR_MSG(reason) ":irc.1337.ma " + (reason)
 #define ERR_NOTREGISTERED(client) ":irc.1337.ma 451 " + (client) + " :You have not registered"
 #define RPL_ENDOFWHO(client) ":irc.1337.ma 315 " + (client) + " :End of /WHO list"
-#define JOIN_SUCC(nickname, username, client_ip, channel) ":" + (nickname) + "!~" + (username) + "@" + (client_ip) + " JOIN " + (channel)
 
 #define RPL_NICK(client, username,ipaddr, newnick)  ":" + (client) + "!~" + (username) + "@"+ (ipaddr) + " NICK :"+(newnick)
 #define KICK_MSG(client, ipaddr, channel, kicked, reason) ":" + (client) + "!~" + (ipaddr) + " KICK " + (channel) + " " + kicked + " " + reason
@@ -60,7 +59,7 @@
 #define RPL_CREATIONTIME(client, channel, creation_time) ":irc.1337.ma 329 " + (client) + " " + (channel) + " " + (creation_time)
 #define RPL_ENDOFNAMES(client, channel)  ":irc.1337.ma 366 " + (client) + " " + (channel) + " :End of /NAMES list"
 #define RPL_ENDOFINVITELIST(client) ":irc.1337.ma 337 " + " :End of /INVITE list"
- //"<client> <channel> <modestring> <mode arguments>..."
+
 #define RPL_CHANNELMODEIS(client, channel, modestring, modargument) ":irc.1337.ma 324 " + (client) + " "+ (channel) + " " +(modestring) + " " + (modargument)
 #define RPL_TOPIC(client, channel, topic) ":irc.1337.ma 332 " + (client) + " " + (channel) +  " :" + (topic)
 #define RPL_NOTOPIC(client, channel)  ":irc.1337.ma 331 " + (client) + " " + (channel) + " :No topic is set"
@@ -77,7 +76,6 @@
 #define ERR_NOSUCHSERVER(client, servername) ":irc.1337.ma 402 " + (client) + " " + (servername) + " :No such server"
 #define PONG(client, server) "PONG " + (client) + " :" + (server)
 #define PING(server) "PING " + (server)
-//                "<client> <channel> <username> <host> <server> <nick> <flags> :<hopcount> <realname>"
 
 #define RPL_WHOREPLY(client, channel, username, hostname, servername, nickname, mode, realname) ":irc.1337.ma 352 " + (client) + " " + (channel) + " " + (username) + " " + (hostname) + " " + (servername) + " " + (nickname) + " " + (mode) + " " + (realname)
 
