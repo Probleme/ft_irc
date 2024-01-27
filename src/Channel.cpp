@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 12:23:30 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 16:19:29 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,8 +67,6 @@ void Channel::removeClient(Client *client, Server *server)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
-        std::cout << "client nickname:00 " << this->_clients.at(i)->getNickname() << std::endl;
-        std::cout << "client nickname: " << client->getNickname() << std::endl;
         if (this->_clients.at(i) == client)
         {
             if (this->CheckClientIsOperator(client->getNickname()))

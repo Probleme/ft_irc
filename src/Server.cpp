@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 17:42:54 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 17:34:32 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ Server::Server()
 
 Server::Server(std::string password ,int port) : _server_name("Problem_irc"),_password(password), _start_time(dateString()), _port(port),  _socket(0), _fds()
 {
-    this->flag = 0;
 }
 Server::~Server() {
     for (size_t i = 0; i < this->_users.size(); i++)
@@ -66,9 +65,9 @@ void Server::run()
         std::cerr << "setsockopt failed" << std::endl;
         exit (EXIT_FAILURE);
     }
-    if (setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
+    if (setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) == EPIPE)
     {
-        std::cerr << "setsockopt failed" << std::endl;
+        std::cerr << "setsockopt failed : broken pipe" << std::endl;
         exit (EXIT_FAILURE);
     }
     if (fcntl(_socket, F_SETFL, O_NONBLOCK) < 0)
@@ -109,7 +108,6 @@ void Server::run()
                 this->readFromClient(i);
         }
     }
-    close(_socket);
 }
 
 void Server::setDescriptors()
@@ -132,7 +130,7 @@ void Server::acceptNewConnection()
     int socket = accept(_socket, (struct sockaddr *)&_client_address, &address_len);
     if (socket < 0)
     {
-        if (errno != EWOULDBLOCK && errno != EAGAIN)
+        if (errno != EWOULDBLOCK)
         {
             std::cerr << "Error: Failed to accept connection." << std::endl;
             exit (EXIT_FAILURE);
@@ -142,9 +140,9 @@ void Server::acceptNewConnection()
     int port = ntohs(_client_address.sin_port);
     this->_users.push_back(new Client(ip, port, socket));
     int opt = 1;
-    if (setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0)
+    if (setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) == EPIPE)
     {
-        std::cerr << "setsockopt failed" << std::endl;
+        std::cerr << "setsockopt failed : broken pipe" << std::endl;
         exit (EXIT_FAILURE);
     }
     if (fcntl(socket, F_SETFL, O_NONBLOCK) < 0)
@@ -163,7 +161,7 @@ void Server::readFromClient(int i)
     ssize_t ret = recv(client->getFd(), buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
     if (ret < 0)
     {
-        if (errno != EWOULDBLOCK && errno != EAGAIN)
+        if (errno != EWOULDBLOCK)
         {
             std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
             this->removeClient(client->getFd(), this); // remove the client from the list
@@ -266,7 +264,17 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::string buf;
         std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
         while (ss >> buf)
-            args.push_back(buf);
+        {
+            if (buf[0] == ':')
+            {
+                size_t pos = cmd.find(":");
+                std::string buf2 = cmd.substr(pos + 1, cmd.length());
+                args.push_back(buf2);
+                break;
+            }
+            else 
+                args.push_back(buf);
+        }
         if (!client->isRegistered() && name != "PASS" && name != "pass")
         {
             client->reply(ERR_NOTREGISTERED(client->getNickname()));

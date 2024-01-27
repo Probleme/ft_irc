@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 17:42:02 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 15:55:50 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ class Server
         std::vector<Channel *> _channels; // channels is a list of channels
         std::vector<Client *> _users;
     public:
-        int flag;
         Server();
         Server(std::string password, int port);
         ~Server();

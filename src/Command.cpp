@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 14:50:36 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 17:32:09 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,13 +66,6 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
         if (args.size() > 0 && args.at(0).at(0) == ':')
             args.at(0).erase(args.at(0).begin());
     }
-    if (command == "JOIN" && server->flag == 0)
-        server->flag = 1;
-    if (command == "MODE" && server->flag == 1)
-        return ;
-    if ((command != "JOIN" && command != "join") && server->flag == 1)
-        server->flag = 0;
-        std::cout << "command " << command << std::endl;
     (this->*_commands[command])(client, args, server);
 }
 
@@ -93,18 +86,13 @@ bool check_if_user_is_in_channel(Client *client, std::string channel_name, std::
     return false;
 }
 
-void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel *>::iterator it, std::string str, int flag)
+void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel *>::iterator it, std::string str, int flag, Server*)
 {
     if (flag == 1)
-    {
         (*it)->setMode((*it)->getMode() + str);
-        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", ""));
-    }
     else
-    {
         (*it)->setMode((*it)->getMode().erase((*it)->getMode().find(str), 1));
-        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", ""));
-    }
+    client->reply(MODE_MSG_2(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str));
 }
 
 bool SearchUserInChannel(Client *client, Channel *channel)
@@ -353,12 +341,14 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
 
 void Command::mode(Client *client, std::vector<std::string> args, Server *server)
 {
-   if (args.size() == 0)
-   {
-        client->setMessage(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE"));
-        client->sendMessage();
-       return;
-   }
+    if (args.size() == 0)
+    {
+            client->setMessage(ERR_NEEDMOREPARAMS(client->getNickname(), "MODE"));
+            client->sendMessage();
+        return;
+    }
+    if (args.size() > 1 && args.at(1) == "+sn")
+        return;
     if (args.at(0).at(0) == '#')
     {
         std::vector<Channel *> channels = server->getChannels();
@@ -389,9 +379,9 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                     else if (args.at(1).at(i) == 'i')
                     {
                         if (flag == 1 && (*it)->getMode().find('i') == std::string::npos)
-                            SetModeAndSandMessage(client, args.at(0), it, "i", 1);
+                            SetModeAndSandMessage(client, args.at(0), it, "i", 1, server);
                         else if (flag == 2 && (*it)->getMode().find('i') != std::string::npos)
-                            SetModeAndSandMessage(client, args.at(0), it, "i", 2);
+                            SetModeAndSandMessage(client, args.at(0), it, "i", 2, server);
                     }
                     else if (args.at(1).at(i) == 't')
                     {
@@ -399,13 +389,13 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         {
                             (*it)->setTopicTime(std::to_string(time(0)));
                             (*it)->setTopic("");
-                            SetModeAndSandMessage(client, args.at(0), it, "t", 1);
+                            SetModeAndSandMessage(client, args.at(0), it, "t", 1, server);
                         }
                         else if (flag == 2 && (*it)->getMode().find('t') != std::string::npos)
                         {
                             (*it)->setTopicTime(std::to_string(time(0)));
                             (*it)->setTopic("Default topic");
-                            SetModeAndSandMessage(client, args.at(0), it, "t", 2);
+                            SetModeAndSandMessage(client, args.at(0), it, "t", 2, server);
                         }
                     }
                     else if (args.at(1).at(i) == 'k')
@@ -419,12 +409,12 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         }
                         else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos && args[n] != "")
                         {
-                            SetModeAndSandMessage(client, args.at(0), it, "k", 1);
+                            SetModeAndSandMessage(client, args.at(0), it, "k", 1, server);
                             (*it)->setChannelKey(args[n]);
                         }
                         else if (flag == 2 && (*it)->getMode().find('k') != std::string::npos)
                         {
-                            SetModeAndSandMessage(client, args.at(0), it, "k", 2);
+                            SetModeAndSandMessage(client, args.at(0), it, "k", 2, server);
                             (*it)->setChannelKey("");
                             continue;
                         }
@@ -445,8 +435,8 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             }
                             if ((*it)->getClient(args[n]) != nullptr)
                             {
-                                std::cout << "get clientnickname " << (*it)->getClient(args[n])->getNickname() << std::endl;
                                 (*it)->AddChannelOperator((*it)->getClient(args[n]));
+                                server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", args[n]), *it, client);
                             }
                             else
                             {
@@ -459,14 +449,22 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                                 n++;
                             }
                             client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", args[n]));
-                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "+o " + args[n]));
                         }
                         else if (flag == 2 && (*it)->CheckClientIsOperator(client->getNickname()) && (*it)->getClient(args[n]))
                         {
                             
                             (*it)->RemoveChannelOperator((*it)->getClient(args[n]));
                             client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "-o ", args[n]));
-                            client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "-o " + args[n]));
+                            server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "-o ", args[n]), *it, client);
+                            if ((*it)->getChannelOperators().size() == 0)
+                            {
+                                if((*it)->getClients().size() > 1)
+                                {
+                                    (*it)->AddChannelOperator((*it)->getClients().at(1));
+                                    client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", (*it)->getClients().at(1)->getNickname()));
+                                    server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", (*it)->getClients().at(1)->getNickname()), *it, client);
+                                }
+                            }
                         }
                     }
                     else if (args.at(1).at(i) == 'l')
@@ -491,12 +489,12 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                                 return;
                             }
                             (*it)->setChannelLimit(atoi(args[n].c_str()));
-                            SetModeAndSandMessage(client, args.at(0), it, "l", 1);
+                            SetModeAndSandMessage(client, args.at(0), it, "l", 1, server);
                         }
                         else if (flag == 2 && (*it)->getMode().find('l') != std::string::npos)
                         {
                             (*it)->setChannelLimit(100);
-                            SetModeAndSandMessage(client, args.at(0), it, "l", 2);
+                            SetModeAndSandMessage(client, args.at(0), it, "l", 2, server);
                         }    
                     }
                     else if (args.at(1).at(i) != 's' || args.at(1).at(i) != 'p')
@@ -505,8 +503,6 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
             }
             else if ((*it) == channels.back() && (*it)->getName() != args.at(0))
             {
-                std::cout << "channel name " << (*it)->getName() << std::endl;
-                std::cout << "args.at(0) " << args.at(0) << std::endl;
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), args.at(0)));
                 return;
             }
@@ -562,6 +558,7 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
             new_channel->setChannelCreationTime(time(0));
             server->addChannel2(new_channel);
             new_channel->AddChannelOperator(client);
+            server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, "+o ", client->getNickname()), new_channel, client);
             if (keys.at(n).size() > 0)
             {
                 new_channel->setMode(new_channel->getMode() + "k");
@@ -684,7 +681,6 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
             {
                 if (!SearchUserInChannel(client, *it2))
                     continue;
-                std::cout << "here 444" << std::endl;
                 (*it2)->removeClient(client, server);
                     server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, "-o ", client->getNickname()), *it2, client);
                 if (msg != "")

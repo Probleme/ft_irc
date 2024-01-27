@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 14:02:06 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/22 12:03:20 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 16:19:49 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
             return (1);
         }
     }
-    if (strlen(argv[2]) < 8)
+    if (strlen(argv[2]) < 4)
     {
         std::cout << "Password must be at least 8 characters" << std::endl;
         return (1);

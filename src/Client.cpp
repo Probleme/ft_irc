@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/05 20:10:58 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 15:50:27 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 16:19:11 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void Client::sendMessage()
     msg += "\r\n";
     if (send(this->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
     {
-        if (errno != EAGAIN && errno != EWOULDBLOCK)
+        if (errno != EWOULDBLOCK)
             std::cout << "Error: send" << std::endl;
     }
     this->setMessage("");
