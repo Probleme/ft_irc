@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 18:10:51 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 18:38:12 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Command::Command()
 
 void Command::execute(Client *client, std::vector<std::string> args, std::string command, Server *server)
 {
-     if (command == "PRIVMSG" && args[0] == "bot")
+    if ((command == "PRIVMSG" || command == "privmsg") && args[0] == "bot")
     {
         command = "/bot";
         args.erase(args.begin());
