@@ -1,0 +1,65 @@
+=================================================================
+==82108==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x607000012b38 at pc 0x00010a3e5b94 bp 0x7ffee58cbcb0 sp 0x7ffee58cbca8
+READ of size 1 at 0x607000012b38 thread T0
+    #0 0x10a3e5b93 in std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__is_long() const string:1420
+    #1 0x10a3c2814 in std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::size() const string:947
+    #2 0x10a390592 in bool std::__1::operator==<std::__1::allocator<char> >(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) string:3865
+    #3 0x10a3ae2c0 in Command::mode(Client*, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >, Server*) Command.cpp:457
+    #4 0x10a38d38a in Command::execute(Client*, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Server*) Command.cpp:78
+    #5 0x10a33cd5b in Server::handleCommands(Client*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >&) Server.cpp:280
+    #6 0x10a33847a in Server::readFromClient(int) Server.cpp:195
+    #7 0x10a335013 in Server::run() Server.cpp:109
+    #8 0x10a376f91 in main main.cpp:47
+    #9 0x7fff6a6bfcc8 in start+0x0 (libdyld.dylib:x86_64+0x1acc8)
+
+0x607000012b38 is located 0 bytes to the right of 72-byte region [0x607000012af0,0x607000012b38)
+allocated by thread T0 here:
+    #0 0x10a5ab7ed in wrap__Znwm+0x7d (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x557ed)
+    #1 0x10a35c750 in std::__1::__libcpp_allocate(unsigned long, unsigned long) new:253
+    #2 0x10a361b11 in std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >::allocate(unsigned long, void const*) memory:1869
+    #3 0x10a361568 in std::__1::allocator_traits<std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >::allocate(std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > >&, unsigned long) memory:1586
+    #4 0x10a360684 in std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >::__vallocate(unsigned long) vector:994
+    #5 0x10a35fc34 in std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >::vector(std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > const&) vector:1257
+    #6 0x10a343dfc in std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >::vector(std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > const&) vector:1250
+    #7 0x10a38d36e in Command::execute(Client*, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, Server*) Command.cpp:78
+    #8 0x10a33cd5b in Server::handleCommands(Client*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >&) Server.cpp:280
+    #9 0x10a33847a in Server::readFromClient(int) Server.cpp:195
+    #10 0x10a335013 in Server::run() Server.cpp:109
+    #11 0x10a376f91 in main main.cpp:47
+    #12 0x7fff6a6bfcc8 in start+0x0 (libdyld.dylib:x86_64+0x1acc8)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow string:1420 in std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__is_long() const
+Shadow bytes around the buggy address:
+  0x1c0e00002510: 00 00 00 fa fa fa fa fa 00 00 00 00 00 00 00 00
+  0x1c0e00002520: 00 fa fa fa fa fa 00 00 00 00 00 00 00 00 00 fa
+  0x1c0e00002530: fa fa fa fa 00 00 00 00 00 00 00 00 00 fa fa fa
+  0x1c0e00002540: fa fa 00 00 00 00 00 00 00 00 00 fa fa fa fa fa
+  0x1c0e00002550: 00 00 00 00 00 00 00 00 00 fa fa fa fa fa 00 00
+=>0x1c0e00002560: 00 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa fa
+  0x1c0e00002570: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0e00002580: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0e00002590: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0e000025a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0e000025b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==82108==ABORTING
+[1]    82108 abort      ./ircserv 6666 qwer1234

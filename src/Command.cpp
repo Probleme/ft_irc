@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 18:23:53 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 10:13:19 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,9 +72,6 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
         return ;
     if ((command != "JOIN" && command != "join") && server->flag == 1)
         server->flag = 0;
-    std::cout<< ":commanddd " << command << std::endl;
-    for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++)
-        std::cout << ":args " << *it << std::endl;
     (this->*_commands[command])(client, args, server);
 }
 
@@ -100,14 +97,12 @@ void SetModeAndSandMessage(Client *client, std::string args, std::vector<Channel
     if (flag == 1)
     {
         (*it)->setMode((*it)->getMode() + str);
-        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", args.at(2)));
+        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", ""));
     }
     else
     {
         (*it)->setMode((*it)->getMode().erase((*it)->getMode().find(str), 1));
-        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", args.at(2)));
-        // client->setMessage(RPL_CHANNELMODEIS(client->getNickname(), args, (*it)->getMode(), ' '));
-        // client->sendMessage();
+        client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), str + " ", ""));
     }
 }
 
@@ -370,6 +365,7 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
         {
             if ((*it)->getName() == args.at(0))
             {
+                int n  = 2;
                 if ((*it)->CheckClientIsOperator(client->getNickname()) == false)
                 {
                     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
@@ -422,10 +418,10 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             // i++;
                             // goto label;
                         }
-                        else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos)
+                        else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos && args[n] != "")
                         {
                             SetModeAndSandMessage(client, args.at(0), it, "k", 1);
-                            (*it)->setChannelKey(args.at(2));
+                            (*it)->setChannelKey(args[n]);
                         }
                         else if (flag == 2 && (*it)->getMode().find('k') != std::string::npos)
                         {
@@ -445,18 +441,30 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             }
                             if (check_if_user_is_in_channel(client, (*it)->getName(), channels) == false)
                             {
-                                client->reply(ERR_NOSUCHNICK(client->getNickname(), args.at(2)));
+                                client->reply(ERR_NOSUCHNICK(client->getNickname(), args[n]));
                                 return;
                             }
-                            (*it)->AddChannelOperator((*it)->getClient(args.at(2)));
-                            client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", args.at(2)));
-                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "+o " + args.at(2)));
+                            if ((*it)->getClient(args[n]))
+                                (*it)->AddChannelOperator((*it)->getClient(args[n]));
+                            else
+                            {
+                                client->reply(ERR_USERNOTINCHANNEL(client->getNickname(), args[n], args.at(0)));
+                                if (args[n] == args.back())
+                                {
+                                    args[n] = "";
+                                    continue;    
+                                }
+                                n++;
+                            }
+                            client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "+o ", args[n]));
+                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "+o " + args[n]));
                         }
-                        else if (flag == 2 &&(*it)->CheckClientIsOperator(client->getNickname()))
+                        else if (flag == 2 && (*it)->CheckClientIsOperator(client->getNickname()) && (*it)->getClient(args[n]))
                         {
-                            (*it)->RemoveChannelOperator((*it)->getClient(args.at(2)));
-                            client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "-o ", args.at(2)));
-                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "-o " + args.at(2)));
+                            
+                            (*it)->RemoveChannelOperator((*it)->getClient(args[n]));
+                            client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "-o ", args[n]));
+                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "-o " + args[n]));
                         }
                     }
                     else if (args.at(1).at(i) == 'l')
@@ -472,13 +480,13 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         }
                         if (flag == 1 && (*it)->getMode().find('l') == std::string::npos)
                         {
-                            if (std::stoi(args.at(2)) <= 0 || std::stoi(args.at(2)) < (int)(*it)->getClients().size())
+                            if (std::stoi(args[n]) <= 0 || std::stoi(args[n]) < (int)(*it)->getClients().size())
                             {
                                 client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
                                 return;
                             }
-                            (*it)->setChannelLimit(std::stoi(args.at(2)));
-                            (*it)->setChannelLimit(std::stoi(args.at(2)));
+                            (*it)->setChannelLimit(std::stoi(args[n]));
+                            (*it)->setChannelLimit(std::stoi(args[n]));
                             SetModeAndSandMessage(client, args.at(0), it, "l", 1);
                         }
                         else if (flag == 2 && (*it)->getMode().find('l') != std::string::npos)

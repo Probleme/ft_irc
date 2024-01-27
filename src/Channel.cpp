@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/26 17:39:55 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 10:11:57 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,12 +77,8 @@ void Channel::removeClient(Client *client, Server *server)
                     this->_clients.erase(this->_clients.begin() + i);
                     if (this->_clients.size() != 0)
                     {
-                    
-                    std::cout << "the new operator is : " << this->_clients.at(0)->getNickname() << std::endl;
-                    this->_operator.push_back(this->_clients.at(0));
-                    // client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, "+o ", this->_clients.at(0)->getNickname()));
-                    // client->reply(RPL_NAMREPLY(client->getNickname(), this->_name, this->getChannelUsersList(this)));
-                    server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, "+o ", this->_clients.at(0)->getNickname()), this, client);
+                        this->_operator.push_back(this->_clients.at(0));
+                        server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, "+o ", this->_clients.at(0)->getNickname()), this, client);
                     }
                     return;
                 }
