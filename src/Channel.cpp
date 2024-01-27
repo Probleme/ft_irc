@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 10:11:57 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 12:23:30 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,14 @@ void Channel::removeClient(Client *client, Server *server)
 {
     for (size_t i = 0; i < this->_clients.size(); i++)
     {
+        std::cout << "client nickname:00 " << this->_clients.at(i)->getNickname() << std::endl;
+        std::cout << "client nickname: " << client->getNickname() << std::endl;
         if (this->_clients.at(i) == client)
         {
             if (this->CheckClientIsOperator(client->getNickname()))
             {
                 this->RemoveChannelOperator(client);
+                client->reply(PART_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, ""));
                 if (this->_operator.size() == 0)
                 {
                     this->_clients.erase(this->_clients.begin() + i);
@@ -84,6 +87,8 @@ void Channel::removeClient(Client *client, Server *server)
                 }
             }
             client->setIsInvited(false);
+            client->reply(PART_MSG(client->getNickname(), client->getUsername(), client->getHostname(), this->_name, ""));
+
             this->_clients.erase(this->_clients.begin() + i);
             return;
         }

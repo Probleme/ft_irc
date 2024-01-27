@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 10:13:19 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 14:18:19 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ void Command::execute(Client *client, std::vector<std::string> args, std::string
         return ;
     if ((command != "JOIN" && command != "join") && server->flag == 1)
         server->flag = 0;
+        std::cout << "command " << command << std::endl;
     (this->*_commands[command])(client, args, server);
 }
 
@@ -415,8 +416,6 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             if (!args.at(1)[i + 1])
                                 return;
                             continue;
-                            // i++;
-                            // goto label;
                         }
                         else if (flag == 1 && (*it)->getMode().find('k') == std::string::npos && args[n] != "")
                         {
@@ -427,7 +426,7 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                         {
                             SetModeAndSandMessage(client, args.at(0), it, "k", 2);
                             (*it)->setChannelKey("");
-                            return;
+                            continue;
                         }
                     }
                     else if (args.at(1).at(i) == 'o')
@@ -444,8 +443,11 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                                 client->reply(ERR_NOSUCHNICK(client->getNickname(), args[n]));
                                 return;
                             }
-                            if ((*it)->getClient(args[n]))
+                            if ((*it)->getClient(args[n]) != nullptr)
+                            {
+                                std::cout << "get clientnickname " << (*it)->getClient(args[n])->getNickname() << std::endl;
                                 (*it)->AddChannelOperator((*it)->getClient(args[n]));
+                            }
                             else
                             {
                                 client->reply(ERR_USERNOTINCHANNEL(client->getNickname(), args[n], args.at(0)));
@@ -464,7 +466,7 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             
                             (*it)->RemoveChannelOperator((*it)->getClient(args[n]));
                             client->reply(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), args.at(0), "-o ", args[n]));
-                            // client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "-o " + args[n]));
+                            client->reply(RPL_CHANNELMODEIS(client->getNickname(), args.at(0), (*it)->getMode(), "-o " + args[n]));
                         }
                     }
                     else if (args.at(1).at(i) == 'l')
@@ -475,11 +477,14 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                             if (!args.at(1)[i + 1])
                                 return;
                             continue;
-                            // i++;
-                            // goto label;
                         }
                         if (flag == 1 && (*it)->getMode().find('l') == std::string::npos)
                         {
+                            if (args[n].find_first_not_of("0123456789") != std::string::npos)
+                            {
+                                client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
+                                return;
+                            }
                             if (std::stoi(args[n]) <= 0 || std::stoi(args[n]) < (int)(*it)->getClients().size())
                             {
                                 client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
@@ -501,6 +506,8 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
             }
             else if ((*it) == channels.back() && (*it)->getName() != args.at(0))
             {
+                std::cout << "channel name " << (*it)->getName() << std::endl;
+                std::cout << "args.at(0) " << args.at(0) << std::endl;
                 client->reply(ERR_NOSUCHCHANNEL(client->getNickname(), args.at(0)));
                 return;
             }
@@ -642,6 +649,11 @@ void Command::join(Client *client, std::vector<std::string> args, Server *server
         }
         else
         {
+            if (exist_channel->getChannelOperators().size() == 0)
+            {
+                exist_channel->AddChannelOperator(client);
+                server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, "+o ", client->getNickname()), exist_channel, client);
+            }
             exist_channel->addClient(client);
             client->reply(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()));
             server->sendToAllClientsInChannel(JOIN_SUCC(client->getNickname(), client->getUsername(), client->getHostname(), exist_channel->getName()), exist_channel,client);
@@ -673,8 +685,9 @@ void Command::part(Client *client, std::vector<std::string> args, Server *server
             {
                 if (!SearchUserInChannel(client, *it2))
                     continue;
+                std::cout << "here 444" << std::endl;
                 (*it2)->removeClient(client, server);
-                    // server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, "-o ", client->getNickname()), *it2, client);
+                    server->sendToAllClientsInChannel(MODE_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, "-o ", client->getNickname()), *it2, client);
                 if (msg != "")
                     client->reply(msg);
                 server->sendToAllClientsInChannel(PART_MSG(client->getNickname(), client->getUsername(), client->getHostname(), *it, msg), *it2, client);
