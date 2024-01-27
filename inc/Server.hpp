@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:28 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 15:55:50 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 18:09:58 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,14 @@ class Channel;
 class Server
 {
     private:
-        std::string _server_name; // server_name is a string of 32 characters
-        std::string _password; // password is a string of 8 characters
-        std::string _start_time; // start_time is a string of 32 characters
-        int _port; // port is a 16-bit unsigned integer
-        int _socket; // socket is an endpoint for communication
-        struct sockaddr_in _client_address; // sockaddr_in is a structure containing an internet address (IPv4)
+        std::string _server_name;
+        std::string _password;
+        std::string _start_time;
+        int _port;
+        int _socket;
+        struct sockaddr_in _address;
         struct pollfd *_fds;
-        std::vector<Channel *> _channels; // channels is a list of channels
+        std::vector<Channel *> _channels;
         std::vector<Client *> _users;
     public:
         Server();

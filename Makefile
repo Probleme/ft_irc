@@ -6,12 +6,12 @@
 #    By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/31 16:22:29 by ataouaf           #+#    #+#              #
-#    Updated: 2024/01/25 16:53:07 by ataouaf          ###   ########.fr        #
+#    Updated: 2024/01/27 18:12:31 by ataouaf          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
-CC = c++ -Wall -Wextra -Werror -g -fsanitize=address,undefined
+CC = c++ -Wall -Wextra -Werror -std=c++98
 NAME = ircserv
 OBJECTS = ./obj
 INCLUDES = ./inc
@@ -23,7 +23,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(OBJS) -o $@
 
-$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp Numerics.hpp)
+$(OBJECTS)/%.o: %.cpp $(addprefix $(INCLUDES)/, Server.hpp Client.hpp Command.hpp Channel.hpp Numerics.hpp randomMsg.hpp)
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@
 

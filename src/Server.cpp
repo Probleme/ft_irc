@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:26:16 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 17:34:32 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 18:10:41 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,10 @@ void Server::run()
         std::cerr << "fcntl failed" << std::endl;
         exit (EXIT_FAILURE);
     }
-    _client_address.sin_family = AF_INET;
-    _client_address.sin_port = htons(_port);
-    _client_address.sin_addr.s_addr = INADDR_ANY;
-    if (bind(_socket, (struct sockaddr *)&_client_address, sizeof(_client_address)) < 0)
+    _address.sin_family = AF_INET;
+    _address.sin_port = htons(_port);
+    _address.sin_addr.s_addr = INADDR_ANY;
+    if (bind(_socket, (struct sockaddr *)&_address, sizeof(_address)) < 0)
     {
         std::cerr << "bind failed" << std::endl;
         exit (EXIT_FAILURE);
@@ -126,8 +126,8 @@ void Server::setDescriptors()
 
 void Server::acceptNewConnection()
 {
-    socklen_t address_len = sizeof(_client_address);
-    int socket = accept(_socket, (struct sockaddr *)&_client_address, &address_len);
+    socklen_t address_len = sizeof(_address);
+    int socket = accept(_socket, (struct sockaddr *)&_address, &address_len);
     if (socket < 0)
     {
         if (errno != EWOULDBLOCK)
@@ -136,8 +136,8 @@ void Server::acceptNewConnection()
             exit (EXIT_FAILURE);
         }
     }
-    std::string ip = inet_ntoa(_client_address.sin_addr);
-    int port = ntohs(_client_address.sin_port);
+    std::string ip = inet_ntoa(_address.sin_addr);
+    int port = htons(_address.sin_port);
     this->_users.push_back(new Client(ip, port, socket));
     int opt = 1;
     if (setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) == EPIPE)
@@ -164,8 +164,8 @@ void Server::readFromClient(int i)
         if (errno != EWOULDBLOCK)
         {
             std::cerr << "Error: recv() failed for fd " << client->getFd() << std::endl;
-            this->removeClient(client->getFd(), this); // remove the client from the list
-            this->setDescriptors(); // rebuild the pollfd array
+            this->removeClient(client->getFd(), this);
+            this->setDescriptors();
         }
         return;
     }
@@ -255,14 +255,14 @@ void Server::handleCommands(Client *client, std::string &msg)
         std::string name;
         cmd_name >> name;
         client->setCommand(name);
-        cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length()); // remove the carriage return character because it is not part of the command
+        cmd = cmd.substr(0, cmd[cmd.length() - 1] == '\r' ? cmd.length() - 1 : cmd.length());
         if (!chekIfCommandValide(name)) {
             client->reply(ERR_UNKNOWNCOMMAND(client->getNickname(), client->getCommand()));
             return;
         }
         std::vector<std::string> args;
         std::string buf;
-        std::istringstream ss(cmd.substr(name.length(), cmd.length())); // get the arguments
+        std::istringstream ss(cmd.substr(name.length(), cmd.length()));
         while (ss >> buf)
         {
             if (buf[0] == ':')
@@ -322,9 +322,8 @@ void Server:: addChannel2(Channel *channel)
     this->_channels.push_back(channel);
 }
 
-void Server::removeChannel(Channel *channel, Client *client)
+void Server::removeChannel(Channel *channel, Client *)
 {
-    (void)client;
     for (size_t i = 0; i < this->_channels.size(); i++)
     {
         if (this->_channels.at(i) == channel)
@@ -345,16 +344,6 @@ void Server::removeClientFromChannel(Client *client, Channel *channel)
     channel->removeClient(client, this);
 }
 
-// void Server::sendMessageToChannel(Client *client, Channel *channel, std::string message)
-// {
-//     std::vector<Client *> clients = channel->getClients();
-//     for (size_t i = 0; i < clients.size(); i++)
-//     {
-//         if (clients[i] != client)
-//             clients[i]->reply(message);
-//     }
-// }
-
 
 std::string Server::getServerName() const
 {
@@ -368,7 +357,6 @@ std::string Server::getPassword()
 
 std::string Server::getStartTime() const
 {
-    // the getStartTime() function returns the current time with newline character at the end of the string so we need to remove it
     std::string time = this->_start_time;
     time = time.substr(0, time.length() - 1);
     return time;
@@ -410,18 +398,8 @@ void Server::setSocket(int socket)
 
 void Server::setClientAddress(struct sockaddr_in client_address)
 {
-    this->_client_address = client_address;
+    this->_address = client_address;
 }
-
-// struct pollfd *Server::getFds() const
-// {
-//     return this->_fds;
-// }
-
-// void Server::setFds(struct pollfd *fds)
-// {
-//     this->_fds = fds;
-// }
 
 void Server::sendToAllClientsInChannel(std::string message, Channel *channel, Client *client)
 {
@@ -456,16 +434,6 @@ bool Server::checkClientPrivilege(Client *client, Channel *channel)
     }
     return (false);
 }
-
-
-// void Server::SendToAllClients(std::string message, Client *client)
-// {
-//     for (size_t i = 0; i < this->_users.size(); i++)
-//     {
-//         if (this->_users[i] != client)
-//             this->_users[i]->reply(client->getNickname() + " " + message);
-//     }
-// }
 
 void Server::sendReplyToClient(Client *client, std::string message)
 {

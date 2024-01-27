@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 17:32:09 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 18:10:51 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,9 +149,8 @@ void Command::nick(Client *client, std::vector<std::string> args, Server *server
     client->reply(RPL_NICK(old_nickname, client->getUsername(), client->getHostname(), client->getNickname()));
 }
 
-void Command::user(Client *client, std::vector<std::string> args, Server *server)
+void Command::user(Client *client, std::vector<std::string> args, Server *)
 {
-    (void)server;
     if (client->isRegistered() && client->getUsername() != "" && client->getRealname() != "")
     {
         client->reply(ERR_ALREADYREGISTERED(client->getNickname()));
@@ -266,7 +265,7 @@ void Command::kick(Client *client, std::vector<std::string> args, Server *server
 
 void Command::topic(Client *client, std::vector<std::string> args, Server *server)
 {
-    if (args.size() < 1) // changeed
+    if (args.size() < 1)
     {
         client->reply(ERR_NEEDMOREPARAMS(client->getNickname(), "TOPIC"));
         return;
@@ -309,11 +308,6 @@ void Command::topic(Client *client, std::vector<std::string> args, Server *serve
                 }
                 if (args.at(1) == ":")
                 {
-                    // if ((*it)->getMode().find('t') != std::string::npos)
-                    // {
-                    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNickname(), args.at(0)));
-                    //     return;
-                    // }
                     (*it)->setTopic("");
                     (*it)->setTopicTime(server->getStartTime());
                     client->reply(RPL_NOTOPIC(client->getNickname(), args.at(0)));
@@ -968,7 +962,6 @@ void Command::notice(Client *client, std::vector<std::string> args, Server *serv
 
 void Command::quit(Client *client, std::vector<std::string> args, Server *server)
 {
-    (void)server;
     std::string msg;
     for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++)
         msg += " " + (*it);

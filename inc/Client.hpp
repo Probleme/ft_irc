@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/31 16:27:47 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/25 11:00:42 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 18:09:34 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ class Client{
         void welcome();
         void reply(std::string message);
         void reply(std::string message, std::string command);
-        // void reply(std::string message, std::string command, std::string channel);
         void sendMessage();
         
         std::vector<std::string> split(std::string str, char c);

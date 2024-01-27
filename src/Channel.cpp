@@ -6,7 +6,7 @@
 /*   By: ataouaf <ataouaf@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:27:25 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 16:19:29 by ataouaf          ###   ########.fr       */
+/*   Updated: 2024/01/27 18:10:56 by ataouaf          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,9 @@ Channel::Channel(std::string name, Client *client)
 
 Channel::~Channel()
 {
-    // we need to delete all clients in the channel
     for (size_t i = 0; i < this->_clients.size(); i++)
         delete this->_clients.at(i);
     this->_clients.clear();
-    // we need to delete all operators in the channel
     for (size_t i = 0; i < this->_operator.size(); i++)
         delete this->_operator.at(i);
     this->_operator.clear();
