@@ -6,7 +6,7 @@
 /*   By: aer-raou <aer-raou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 05:01:11 by ataouaf           #+#    #+#             */
-/*   Updated: 2024/01/27 14:18:19 by aer-raou         ###   ########.fr       */
+/*   Updated: 2024/01/27 14:50:36 by aer-raou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -485,13 +485,12 @@ void Command::mode(Client *client, std::vector<std::string> args, Server *server
                                 client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
                                 return;
                             }
-                            if (std::stoi(args[n]) <= 0 || std::stoi(args[n]) < (int)(*it)->getClients().size())
+                            if (atoi(args[n].c_str()) <= 0 || atoi(args[n].c_str()) < (int)(*it)->getClients().size())
                             {
                                 client->reply(ERR_INVALIDMODEPARAM(client->getNickname(), args.at(0), args.at(1).at(i), "<limit> (limit must be > 0 and > number of clients in channel)"));
                                 return;
                             }
-                            (*it)->setChannelLimit(std::stoi(args[n]));
-                            (*it)->setChannelLimit(std::stoi(args[n]));
+                            (*it)->setChannelLimit(atoi(args[n].c_str()));
                             SetModeAndSandMessage(client, args.at(0), it, "l", 1);
                         }
                         else if (flag == 2 && (*it)->getMode().find('l') != std::string::npos)
